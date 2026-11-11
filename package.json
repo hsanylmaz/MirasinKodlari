@@ -1,0 +1,25 @@
+{
+  "name": "mirasin-kodlari-photobooth",
+  "version": "1.0.0",
+  "description": "Mirasın Kodları Yarışması Yeşil Perde (Chroma Key) Fotoğraf Stüdyosu ve QR İndirme Sistemi",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsc && node dist/server.js",
+    "start": "tsc && node dist/server.js",
+    "build": "tsc && node scripts/build-static.js",
+    "build:pages": "node scripts/build-static.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "@types/qrcode": "^1.5.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

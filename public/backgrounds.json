@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "QXJrYXBsYW4xLmpwZWc",
+      "fileName": "Arkaplan1.jpeg",
+      "title": "Arkaplan1",
+      "url": "./arkaplanlar/Arkaplan1.jpeg",
+      "updatedAt": "2026-11-10T12:18:03.354Z"
+    },
+    {
+      "id": "QXJrYXBsYW4yLmpwZWc",
+      "fileName": "Arkaplan2.jpeg",
+      "title": "Arkaplan2",
+      "url": "./arkaplanlar/Arkaplan2.jpeg",
+      "updatedAt": "2026-11-10T12:44:46.730Z"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+_site/
+kaydedilen_fotograflar/*.png
+kaydedilen_fotograflar/*.jpg
+kaydedilen_fotograflar/*.jpeg
+kaydedilen_fotograflar/*.webp
+kaydedilen_fotograflar/index.json
+.DS_Store
+Thumbs.db

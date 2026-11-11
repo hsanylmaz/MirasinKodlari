@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mirasın Kodları — Yeşil Perde (Chroma Key) Fotoğraf Stüdyosu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/studio.css" />
+</head>
+<body>
+  <!-- Üst Yayın & Kiosk Durum Çubuğu -->
+  <header class="studio-header">
+    <div class="brand-cluster">
+      <div class="tally-indicator" id="cameraStatusBadge">
+        <span class="tally-dot"></span>
+        <span id="cameraStatusText">STÜDYO HAZIR</span>
+      </div>
+      <h1 class="brand-title">MİRASIN <span>KODLARI</span> // CHROMA STÜDYO</h1>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-emerald" id="btnOpenWifiStand" title="Öğrencilerin telefonlarıyla stüdyoya girmesi için QR panosunu açar">
+        📡 GİRİŞ &amp; Wİ-Fİ QR PANOSU
+      </button>
+      <button type="button" class="btn" id="btnOpenGallery">
+        GALERİ (<span id="photoCountBadge">0</span>)
+      </button>
+      <button type="button" class="btn hide-on-mobile" id="btnToggleMute" title="Geri sayım ve deklanşör sesini aç/kapat">
+        SES: AÇIK
+      </button>
+      <button type="button" class="btn hide-on-mobile" id="btnFullscreen" title="Tam Ekran Kiosk Modu (F11)">
+        TAM EKRAN
+      </button>
+    </div>
+  </header>
+
+  <!-- Ana Çalışma Alanı -->
+  <main class="studio-workspace">
+    <!-- Sol Sütun: Canlı Kamera Vizörü, Telefon Çekim Barı ve Arka Plan Seçici Film Şeridi -->
+    <section class="stage-column" aria-label="Canlı Önizleme ve Arka Plan Seçimi">
+      <div class="viewfinder-shell" id="viewfinderShell">
+        <!-- Gizli Kamera Video Kaynağı -->
+        <video id="webcamVideo" playsinline autoplay muted class="hidden"></video>
+
+        <!-- Gerçek Zamanlı Birleştirilmiş Sahne Canvas -->
+        <canvas id="stageCanvas" width="1280" height="720"></canvas>
+
+        <!-- Üst Vizör Bilgi Etiketleri -->
+        <div class="hud-overlay-top">
+          <div class="hud-tag" id="activeBgLabel">SAHNE: YÜKLENİYOR...</div>
+          <div class="hud-tag amber" id="resolutionTag">1080P FULL HD • CHROMA KEY AKTİF</div>
+        </div>
+
+        <!-- Ekrandan Yeşil Renk Seçme (Damlalık) Aktif Banner -->
+        <div class="eyedropper-banner hidden" id="eyedropperBanner">
+          YEŞİL PERDE ÜZERİNDEKİ BİR NOKTAYA DOKUNUN / TIKLAYIN (İPTAL: ESC)
+        </div>
+
+        <!-- Geri Sayım Katmanı -->
+        <div class="countdown-overlay hidden" id="countdownOverlay">
+          <div class="countdown-number" id="countdownNumber">3</div>
+          <div class="countdown-label">POZ VERİN!</div>
+        </div>
+
+        <!-- Deklanşör Flaş Katmanı -->
+        <div class="shutter-flash" id="shutterFlash"></div>
+      </div>
+
+      <!-- Telefon / Mobil Kamera ile Çekim & Doğrudan Telefona İndirme Çubuğu -->
+      <div class="mobile-camera-bar">
+        <div class="mobile-camera-bar-left">
+          <!-- Telefon Arka Kamera Input -->
+          <input type="file" id="mobileRearCameraInput" accept="image/*" capture="environment" class="hidden" />
+          <!-- Telefon Ön (Selfie) Kamera Input -->
+          <input type="file" id="mobileSelfieCameraInput" accept="image/*" capture="user" class="hidden" />
+          <!-- Galeriden Fotoğraf Seçme Input -->
+          <input type="file" id="mobileGalleryInput" accept="image/*" class="hidden" />
+
+          <button type="button" class="btn btn-amber" id="btnFlipLiveCamera" title="Canlı kamerayı Ön (Selfie) ve Arka kamera arasında değiştir">
+            🔄 KAMERA ÇEVİR (ÖN/ARKA)
+          </button>
+          <button type="button" class="btn" id="btnMobileRearCam" title="Telefonun kendi fotoğraf kamerasıyla çek">
+            📸 FOTOĞRAF KAMERASI
+          </button>
+          <button type="button" class="btn" id="btnMobileGallery" title="Telefondaki veya bilgisayardaki bir yeşil perde fotoğrafını yükle">
+            🖼 GALERİDEN SEÇ
+          </button>
+          <button type="button" class="btn hidden" id="btnBackToLiveVideo" style="border-color:#EF4444; color:#FCA5A5;">
+            🎥 CANLI KAMERAYA DÖN
+          </button>
+        </div>
+
+        <button type="button" class="btn btn-emerald" id="btnQuickDownloadToDevice" title="Oluşan fotoğrafı doğrudan bu telefona/cihaza indirir">
+          ⬇ TELEFONUMA / CİHAZIMA İNDİR
+        </button>
+      </div>
+
+      <!-- Alt Arka Plan Seçici Film Şeridi -->
+      <div class="filmstrip-dock">
+        <div class="filmstrip-header">
+          <div class="filmstrip-title">
+            <span>1. ARKA PLAN SEÇİMİ (DOKUNUN)</span>
+            <span class="folder-path-hint hide-on-mobile" title="Görsellerinizi doğrudan arkaplanlar/ klasörüne atabilirsiniz">📁 arkaplanlar/</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="file" id="bgFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="hidden" />
+            <button type="button" class="btn" id="btnUploadBg" title="Yeni arka plan görseli seçip sahneye ekler">
+              + ARKA PLAN EKLE
+            </button>
+            <button type="button" class="btn btn-amber" id="btnRefreshBgs" title="arkaplanlar/ klasöründeki görselleri yeniler">
+              ↻ YENİLE
+            </button>
+          </div>
+        </div>
+
+        <div class="filmstrip-list" id="backgroundsList" role="listbox" aria-label="Arka Plan Görselleri">
+          <!-- JS tarafından doldurulur -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Sağ Sütun: Stüdyo Kontrol & Kalibrasyon İstasyonu -->
+    <aside class="control-rack" aria-label="Stüdyo ve Yeşil Perde Ayarları">
+      <!-- 1. Öğrenci / Takım Bilgisi & Çerçeve -->
+      <div class="rack-section">
+        <div class="rack-heading">
+          <span>2. YARIŞMACI &amp; ÇERÇEVE BİLGİSİ</span>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inputParticipantName">Öğrenci Adı Soyadı (İsteğe Bağlı)</label>
+          <input
+            type="text"
+            id="inputParticipantName"
+            class="studio-input"
+            placeholder="Örn: Elif Yılmaz"
+            maxlength="45"
+          />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="inputTeamName">Takım / Okul Adı (İsteğe Bağlı)</label>
+          <input
+            type="text"
+            id="inputTeamName"
+            class="studio-input"
+            placeholder="Örn: Algoritma Avcıları"
+            maxlength="45"
+          />
+        </div>
+        <div class="toggle-row">
+          <label for="chkShowFrame">"Mirasın Kodları" Alt Bandını Göster</label>
+          <input type="checkbox" id="chkShowFrame" checked />
+        </div>
+      </div>
+
+      <!-- 2. Yeşil Perde (Chroma Key) Kalibrasyonu -->
+      <div class="rack-section">
+        <div class="rack-heading">
+          <span>3. YEŞİL PERDE (CHROMA KEY) AYARI</span>
+          <button type="button" class="btn" id="btnResetChroma" style="padding:3px 8px; font-size:11px;">
+            SIFIRLA
+          </button>
+        </div>
+
+        <div class="color-picker-row">
+          <input
+            type="color"
+            id="inputKeyColor"
+            class="color-swatch-input"
+            value="#18c338"
+            title="Silinecek perde rengi"
+          />
+          <button type="button" class="btn btn-emerald" id="btnPickColorFromVideo" style="flex:1;">
+            🎯 EKRANDAN YEŞİL TONU SEÇ
+          </button>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <label for="sliderSimilarity">Renk Toleransı (Hassasiyet)</label>
+            <span class="field-value" id="valSimilarity">34%</span>
+          </div>
+          <input
+            type="range"
+            id="sliderSimilarity"
+            class="studio-range"
+            min="5"
+            max="75"
+            value="34"
+          />
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <label for="sliderSmoothness">Kenar Yumuşatma</label>
+            <span class="field-value" id="valSmoothness">12%</span>
+          </div>
+          <input
+            type="range"
+            id="sliderSmoothness"
+            class="studio-range"
+            min="1"
+            max="35"
+            value="12"
+          />
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">
+            <label for="sliderSpill">Yeşil Yansıma Giderici (Spill)</label>
+            <span class="field-value" id="valSpill">45%</span>
+          </div>
+          <input
+            type="range"
+            id="sliderSpill"
+            class="studio-range"
+            min="0"
+            max="100"
+            value="45"
+          />
+        </div>
+
+        <div class="toggle-row">
+          <label for="chkShowRawGreen">Orijinal Yeşil Perdeyi Göster (Test)</label>
+          <input type="checkbox" id="chkShowRawGreen" />
+        </div>
+      </div>
+
+      <!-- 3. Kamera & Çekim Ayarları -->
+      <div class="rack-section">
+        <div class="rack-heading">
+          <span>4. KAMERA &amp; SAYAÇ</span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="selectCamera">Canlı Kamera Kaynağı</label>
+          <select id="selectCamera" class="studio-select">
+            <option value="simulation">Demo Yeşil Perde Simülasyonu</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="selectTimer">Geri Sayım Süresi</label>
+          <select id="selectTimer" class="studio-select">
+            <option value="3" selected>3 Saniye Geri Sayım</option>
+            <option value="5">5 Saniye Geri Sayım</option>
+            <option value="0">Anında Çekim (Sayaçsız)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <label for="chkMirror">Ayna Görüntüsü (Mirror)</label>
+          <input type="checkbox" id="chkMirror" checked />
+        </div>
+      </div>
+
+      <!-- Deklanşör & Doğrudan İndirme Butonları -->
+      <div class="shutter-dock">
+        <button type="button" class="btn-shutter" id="btnCapturePhoto">
+          <span>📸 FOTOĞRAF ÇEK (SAYAÇLI)</span>
+        </button>
+        <button type="button" class="btn-direct-save" id="btnDirectSaveSidebar">
+          <span>⬇ DOĞRUDAN TELEFONUMA / CİHAZA İNDİR</span>
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Giriş QR + Wi-Fi QR Karşılama Panosu Modalı -->
+  <div class="modal-backdrop hidden" id="wifiStandModal" role="dialog" aria-modal="true" aria-labelledby="wifiStandTitle">
+    <div class="stand-modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-tech); padding-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent-amber); font-weight:700;">
+            MİRASIN KODLARI // ÖĞRENCİ SELF-SERVİS GİRİŞ PANOSU
+          </div>
+          <h2 id="wifiStandTitle" style="font-family:var(--font-display); font-size:22px;">
+            Kendi Telefonunuzla Fotoğraf Çekmek İçin QR Kodu Okutun
+          </h2>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <a href="./afis.html" target="_blank" class="btn btn-emerald" style="text-decoration:none;">
+            🖨 A4 QR AFİŞİNİ AÇ / YAZDIR
+          </a>
+          <button type="button" class="btn btn-amber" id="btnCloseWifiStand">PANOYU KAPAT [ESC]</button>
+        </div>
+      </div>
+
+      <div class="stand-grid">
+        <!-- 1. KART: DOĞRUDAN STÜDYO GİRİŞ QR KODU (GITHUB PAGES / WEB) -->
+        <div class="stand-step-box">
+          <div class="stand-step-badge">DOĞRUDAN GİRİŞ (MOBİL İNTERNET VEYA Wİ-Fİ)</div>
+          <p style="font-size:13px; color:var(--text-muted);">
+            Telefon kameranızla bu QR kodu okutun; stüdyo doğrudan telefonunuzda açılsın, arka planınızı seçip fotoğrafınızı çekin ve indirin!
+          </p>
+
+          <div class="qr-frame">
+            <img id="studioEntryQrImg" src="" alt="Stüdyo Giriş QR Kodu" />
+          </div>
+
+          <div style="width:100%; text-align:left; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+            <div class="field-group" id="standNetworkGroup" style="margin:0;">
+              <label class="field-label" for="selectStandNetwork">Bağlantı Adresi Seçimi:</label>
+              <select id="selectStandNetwork" class="studio-select"></select>
+            </div>
+            <div style="background:var(--bg-void); border:1px solid var(--border-strong); padding:10px; font-family:var(--font-mono); font-size:13px; color:var(--accent-amber); text-align:center; font-weight:700; word-break:break-all;" id="standStudioUrlText">
+              https://hsanylmaz.github.io/Mirasin_Kodlari/
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. KART: İSTEĞE BAĞLI Wİ-Fİ QR KODU -->
+        <div class="stand-step-box">
+          <div class="stand-step-badge" style="background:var(--accent-emerald);">İSTEĞE BAĞLI: STÜDYO Wİ-Fİ AĞI</div>
+          <p style="font-size:13px; color:var(--text-muted);">
+            Mobil internet paketiniz yoksa veya yerel ağdan bağlanmak istiyorsanız bu QR kodu okutarak Wi-Fi ağına otomatik bağlanabilirsiniz.
+          </p>
+
+          <div class="qr-frame" id="wifiQrFrame">
+            <div id="wifiQrPlaceholder" style="color:#111318; font-size:12px; font-weight:700; padding:12px;" class="hidden">
+              Wi-Fi QR Kodu Yükleniyor...
+            </div>
+            <img id="wifiQrImg" src="" alt="Wi-Fi Bağlantı QR Kodu" />
+          </div>
+
+          <div style="width:100%; text-align:left; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+            <div class="field-group" style="margin:0;">
+              <label class="field-label" for="inputWifiSsid">Wi-Fi Ağ Adı (SSID)</label>
+              <input type="text" id="inputWifiSsid" class="studio-input" value="SUPERBOX_Wi-Fi_6306" placeholder="Örn: SUPERBOX_Wi-Fi_6306" />
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 120px; gap:8px;">
+              <div>
+                <label class="field-label" for="inputWifiPassword">Wi-Fi Şifresi</label>
+                <input type="text" id="inputWifiPassword" class="studio-input" value="2wR83g6763" placeholder="Şifreyi yazın" />
+              </div>
+              <div>
+                <label class="field-label" for="selectWifiEnc">Güvenlik</label>
+                <select id="selectWifiEnc" class="studio-select">
+                  <option value="WPA" selected>WPA/WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Şifresiz</option>
+                </select>
+              </div>
+            </div>
+            <button type="button" class="btn btn-emerald" id="btnGenerateWifiQr" style="padding:10px;">
+              ↻ Wİ-Fİ QR KODUNU GÜNCELLE
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Çekim Sonrası İndirme, Paylaşma & QR Modalı -->
+  <div class="modal-backdrop hidden" id="captureResultModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-preview-pane">
+        <img id="capturedPhotoImg" src="" alt="Çekilen Hatıra Fotoğrafı" />
+      </div>
+      <div class="modal-qr-pane">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--accent-amber); font-weight:700; margin-bottom:4px;">
+            MİRASIN KODLARI // HATIRA FOTOĞRAFI HAZIR
+          </div>
+          <h2 id="modalTitle" style="font-family:var(--font-display); font-size:21px; margin-bottom:8px;">
+            Fotoğrafınız Hazır!
+          </h2>
+          <div class="saved-badge" id="savedFilePathBadge">
+            ✓ Yüksek çözünürlüklü (1920x1080) fotoğraf oluşturuldu.
+          </div>
+        </div>
+
+        <div class="qr-frame" id="resultQrContainer">
+          <img id="qrCodeImg" src="" alt="Telefona İndirme QR Kodu" />
+        </div>
+
+        <div id="resultNetworkSelectorBlock">
+          <div class="field-group">
+            <label class="field-label" for="selectQrNetwork">
+              <span>QR Bağlantı Adresi:</span>
+            </label>
+            <select id="selectQrNetwork" class="studio-select"></select>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-align:center; margin-top:4px; word-break:break-all;" id="qrDirectLinkText">
+            https://hsanylmaz.github.io/Mirasin_Kodlari/
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <a id="btnDirectDownload" href="#" download class="btn btn-emerald" style="padding:14px; font-size:15px; text-decoration:none;">
+            ⬇ FOTOĞRAFI TELEFONUMA / CİHAZIMA İNDİR
+          </a>
+          <button type="button" class="btn btn-amber hidden" id="btnNativeSharePhoto" style="padding:13px; font-size:14px;">
+            📤 TELEFONDA PAYLAŞ / FOTOĞRAFLARA KAYDET
+          </button>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn" id="btnPrintPhoto" style="flex:1;">
+              🖨 YAZDIR
+            </button>
+            <button type="button" class="btn" id="btnNewCapture" style="flex:2; padding:12px;">
+              ✓ YENİ ÇEKİME DÖN
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Galeri Modalı -->
+  <div class="modal-backdrop hidden" id="galleryModal" role="dialog" aria-modal="true" aria-labelledby="galleryModalTitle">
+    <div class="gallery-modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-tech); padding-bottom:12px;">
+        <div>
+          <h2 id="galleryModalTitle" style="font-family:var(--font-display); font-size:20px;">
+            ÇEKİLEN FOTOĞRAFLAR GALERİSİ
+          </h2>
+          <p style="font-size:12px; color:var(--text-muted); font-family:var(--font-mono); margin-top:2px;">
+            Bu oturumda ve stüdyoda çekilen fotoğraflar
+          </p>
+        </div>
+        <button type="button" class="btn btn-amber" id="btnCloseGallery">KAPAT [ESC]</button>
+      </div>
+      <div class="gallery-grid" id="galleryGrid">
+        <!-- JS tarafından doldurulur -->
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/audio-fx.js"></script>
+  <script src="./js/chroma-engine.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
