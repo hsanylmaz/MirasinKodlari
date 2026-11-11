@@ -23,7 +23,7 @@
 ## 🚀 Hızlı Başlangıç
 
 ### 1. İnternet Üzerinden (GitHub Pages - Kurulumsuz)
-1. [A4 QR Karşılama Afişini](https://hsanylmaz.github.io/MirasinKodlari/afis.html) yazdırıp yeşil perdenin yanına asın veya ekranda **`📡 GİRİŞ & Wİ-Fİ QR PANOSU`** penceresini açın.
+1. [A4 QR Karşılama Afişini](https://hsanylmaz.github.io/MirasinKodlari/afis.html) yazdırıp yeşil perdenin yanına asın veya ekranda **`📱 STÜDYO GİRİŞ QR KODU`** penceresini açın.
 2. Öğrenciler telefon kameralarıyla QR kodu okutarak stüdyoyu açar, arka planı seçip fotoğrafını çeker ve doğrudan telefonuna indirir.
 
 ### 2. Yerel Bilgisayarda Çalıştırma (Stüdyo Kiosk + Bilgisayara Yedekleme Modu)

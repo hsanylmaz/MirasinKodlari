@@ -1,5 +1,4 @@
 (function () {
-  const WIFI_STORAGE_KEY = 'mirasin_kodlari_wifi_config';
   const GITHUB_PAGES_DEFAULT_URL = 'https://hsanylmaz.github.io/MirasinKodlari/';
 
   const state = {
@@ -74,15 +73,9 @@
     btnToggleMute: document.getElementById('btnToggleMute'),
     btnFullscreen: document.getElementById('btnFullscreen'),
 
-    // Giriş QR + Wi-Fi QR Panosu
+    // Stüdyo Giriş QR Panosu
     wifiStandModal: document.getElementById('wifiStandModal'),
     btnCloseWifiStand: document.getElementById('btnCloseWifiStand'),
-    inputWifiSsid: document.getElementById('inputWifiSsid'),
-    inputWifiPassword: document.getElementById('inputWifiPassword'),
-    selectWifiEnc: document.getElementById('selectWifiEnc'),
-    btnGenerateWifiQr: document.getElementById('btnGenerateWifiQr'),
-    wifiQrPlaceholder: document.getElementById('wifiQrPlaceholder'),
-    wifiQrImg: document.getElementById('wifiQrImg'),
     studioEntryQrImg: document.getElementById('studioEntryQrImg'),
     selectStandNetwork: document.getElementById('selectStandNetwork'),
     standStudioUrlText: document.getElementById('standStudioUrlText'),
@@ -114,7 +107,6 @@
     }
     await loadStaticFallbackConfig();
     await Promise.all([loadNetworkInfo(), loadBackgrounds(), loadPhotos()]);
-    restoreSavedWifiConfig();
     await initCameraDevices();
     requestAnimationFrame(renderLoop);
   }
@@ -124,10 +116,6 @@
       const res = await fetch('./static-config.json');
       if (res.ok) {
         state.staticConfig = await res.json();
-        if (state.staticConfig.defaultWifiQrDataUrl) {
-          els.wifiQrImg.src = state.staticConfig.defaultWifiQrDataUrl;
-          els.wifiQrImg.classList.remove('hidden');
-        }
         if (state.staticConfig.githubPagesQrDataUrl) {
           els.studioEntryQrImg.src = state.staticConfig.githubPagesQrDataUrl;
         }
@@ -198,75 +186,11 @@
         seen.add(iface.url);
         const opt = document.createElement('option');
         opt.value = iface.url;
-        opt.textContent = `📡 Yerel Wi-Fi (${iface.name}): ${iface.url}`;
+        opt.textContent = `📡 Yerel Ağ (${iface.name}): ${iface.url}`;
         if (iface.url === state.selectedBaseUrl) opt.selected = true;
         sel.appendChild(opt);
       }
     });
-  }
-
-  function restoreSavedWifiConfig() {
-    try {
-      const raw = localStorage.getItem(WIFI_STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        if (saved.ssid) els.inputWifiSsid.value = saved.ssid;
-        if (saved.password) els.inputWifiPassword.value = saved.password;
-        if (saved.encryption) els.selectWifiEnc.value = saved.encryption;
-      }
-      if (!state.isStaticHosting && els.inputWifiSsid.value.trim()) {
-        generateWifiQrCode();
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  async function generateWifiQrCode() {
-    const ssid = els.inputWifiSsid.value.trim();
-    const password = els.inputWifiPassword.value;
-    const encryption = els.selectWifiEnc.value;
-
-    if (!ssid) {
-      alert('Lütfen önce Wi-Fi Ağ Adını (SSID) yazın.');
-      els.inputWifiSsid.focus();
-      return;
-    }
-
-    try {
-      localStorage.setItem(WIFI_STORAGE_KEY, JSON.stringify({ ssid, password, encryption }));
-    } catch {
-      // ignore
-    }
-
-    if (state.isStaticHosting) {
-      if (
-        state.staticConfig &&
-        ssid === state.staticConfig.defaultWifiSsid &&
-        password === state.staticConfig.defaultWifiPass &&
-        state.staticConfig.defaultWifiQrDataUrl
-      ) {
-        els.wifiQrImg.src = state.staticConfig.defaultWifiQrDataUrl;
-        els.wifiQrImg.classList.remove('hidden');
-      }
-      return;
-    }
-
-    try {
-      const res = await fetch('./api/wifi-qr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ssid, password, encryption }),
-      });
-      const json = await res.json();
-      if (json.success && json.data) {
-        els.wifiQrImg.src = json.data.qrDataUrl;
-        els.wifiQrImg.classList.remove('hidden');
-        els.wifiQrPlaceholder.classList.add('hidden');
-      }
-    } catch (err) {
-      console.error('Wi-Fi QR hatası:', err);
-    }
   }
 
   async function loadBackgrounds() {
@@ -921,14 +845,13 @@
       reader.readAsDataURL(file);
     });
 
-    // Giriş QR + Wi-Fi QR Panosu
+    // Stüdyo Giriş QR Panosu
     els.btnOpenWifiStand.addEventListener('click', () => {
       els.wifiStandModal.classList.remove('hidden');
     });
     els.btnCloseWifiStand.addEventListener('click', () => {
       els.wifiStandModal.classList.add('hidden');
     });
-    els.btnGenerateWifiQr.addEventListener('click', generateWifiQrCode);
 
     els.selectStandNetwork.addEventListener('change', async () => {
       state.selectedBaseUrl = els.selectStandNetwork.value;

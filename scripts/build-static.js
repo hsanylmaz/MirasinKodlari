@@ -19,9 +19,6 @@ const REPO_NAME = process.env.GITHUB_REPOSITORY
   : 'MirasinKodlari';
 const GITHUB_PAGES_URL = `https://${GITHUB_USERNAME}.github.io/${REPO_NAME}/`;
 
-const DEFAULT_WIFI_SSID = 'SUPERBOX_Wi-Fi_6306';
-const DEFAULT_WIFI_PASS = '2wR83g6763';
-
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg']);
 
 function formatBackgroundTitle(fileName) {
@@ -91,22 +88,13 @@ async function buildStaticSite() {
   fs.writeFileSync(path.join(SITE_DIR, 'backgrounds.json'), bgJsonContent, 'utf-8');
   fs.writeFileSync(path.join(PUBLIC_DIR, 'backgrounds.json'), bgJsonContent, 'utf-8');
 
-  // 3. GitHub Pages ve Varsayılan Wi-Fi için QR kodlarını üret
-  const wifiPayload = `WIFI:T:WPA;S:${DEFAULT_WIFI_SSID};P:${DEFAULT_WIFI_PASS};H:false;;`;
-  const [githubPagesQrDataUrl, defaultWifiQrDataUrl] = await Promise.all([
-    QRCode.toDataURL(GITHUB_PAGES_URL, {
-      errorCorrectionLevel: 'M',
-      margin: 2,
-      width: 420,
-      color: { dark: '#090A0C', light: '#FFFFFF' },
-    }),
-    QRCode.toDataURL(wifiPayload, {
-      errorCorrectionLevel: 'M',
-      margin: 2,
-      width: 420,
-      color: { dark: '#090A0C', light: '#FFFFFF' },
-    }),
-  ]);
+  // 3. GitHub Pages Stüdyo Giriş QR kodunu üret
+  const githubPagesQrDataUrl = await QRCode.toDataURL(GITHUB_PAGES_URL, {
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: 420,
+    color: { dark: '#090A0C', light: '#FFFFFF' },
+  });
 
   const staticConfig = {
     isStaticBuild: true,
@@ -114,9 +102,6 @@ async function buildStaticSite() {
     repoName: REPO_NAME,
     githubPagesUrl: GITHUB_PAGES_URL,
     githubPagesQrDataUrl,
-    defaultWifiSsid: DEFAULT_WIFI_SSID,
-    defaultWifiPass: DEFAULT_WIFI_PASS,
-    defaultWifiQrDataUrl,
   };
 
   const configJson = JSON.stringify(staticConfig, null, 2);
@@ -159,10 +144,10 @@ async function buildStaticSite() {
     }
     .poster {
       width: 100%;
-      max-width: 920px;
+      max-width: 640px;
       background: #111318;
       border: 4px solid #F59E0B;
-      padding: 36px 32px;
+      padding: 40px 32px;
       text-align: center;
     }
     .tag {
@@ -178,7 +163,7 @@ async function buildStaticSite() {
     }
     h1 {
       margin: 0 0 8px;
-      font-size: 34px;
+      font-size: 32px;
       color: #FFFFFF;
       letter-spacing: -0.02em;
     }
@@ -187,15 +172,10 @@ async function buildStaticSite() {
       font-size: 16px;
       margin-bottom: 26px;
     }
-    .steps {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
     .step-card {
       background: #181B22;
       border: 2px solid #262A34;
-      padding: 24px 20px;
+      padding: 28px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -210,24 +190,25 @@ async function buildStaticSite() {
       margin-bottom: 12px;
     }
     .step-title {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 800;
       margin: 0 0 8px;
       color: #F59E0B;
     }
     .step-desc {
-      font-size: 14px;
+      font-size: 15px;
       color: #D1D5DB;
-      margin-bottom: 16px;
-      line-height: 1.45;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      max-width: 460px;
     }
     .qr-box {
       background: #FFFFFF;
-      padding: 14px;
+      padding: 16px;
       border: 4px solid #F59E0B;
-      width: 260px;
-      height: 260px;
-      margin-bottom: 16px;
+      width: 300px;
+      height: 300px;
+      margin-bottom: 20px;
     }
     .qr-box img {
       width: 100%;
@@ -240,7 +221,7 @@ async function buildStaticSite() {
       border: 1px solid #373D4B;
       padding: 12px;
       font-family: monospace;
-      font-size: 13px;
+      font-size: 14px;
       color: #F3F4F6;
       line-height: 1.6;
       word-break: break-all;
@@ -268,31 +249,17 @@ async function buildStaticSite() {
   <div class="poster">
     <div class="tag">MİRASIN KODLARI YARIŞMASI</div>
     <h1>YEŞİL PERDE HATIRA FOTOĞRAF STÜDYOSU</h1>
-    <div class="subtitle">Kendi telefonunuzun internetiyle doğrudan girebilir veya stüdyo Wi-Fi ağına bağlanabilirsiniz:</div>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-num">DOĞRUDAN GİRİŞ (Wİ-Fİ GEREKMEZ)</div>
-        <div class="step-title">FOTOĞRAF STÜDYOSUNU AÇIN</div>
-        <div class="step-desc">Kendi mobil internetinizle veya Wi-Fi ile bu QR kodu okutun, arka plan seçip fotoğrafınızı çekin ve telefonunuza indirin:</div>
-        <div class="qr-box">
-          <img src="${githubPagesQrDataUrl}" alt="GitHub Pages Stüdyo QR Kodu" />
-        </div>
-        <div class="info-box">
-          Web Adresi:<br/>
-          <strong>${GITHUB_PAGES_URL}</strong>
-        </div>
+    <div class="subtitle">Telefon kameranızla aşağıdaki QR kodu okutarak doğrudan stüdyoya bağlanabilirsiniz:</div>
+    <div class="step-card">
+      <div class="step-num">TELEFON KAMERANIZLA OKUTUN</div>
+      <div class="step-title">FOTOĞRAF STÜDYOSUNU AÇIN</div>
+      <div class="step-desc">QR kodu okutun, yarışma arka planınızı seçip yeşil perde önünde fotoğrafınızı çekin ve doğrudan telefonunuza indirin:</div>
+      <div class="qr-box">
+        <img src="${githubPagesQrDataUrl}" alt="Mirasın Kodları Stüdyo QR Kodu" />
       </div>
-      <div class="step-card">
-        <div class="step-num">İSTEĞE BAĞLI: ÜCRETSİZ Wİ-Fİ</div>
-        <div class="step-title">STÜDYO Wİ-Fİ AĞI</div>
-        <div class="step-desc">İnternet paketiniz yoksa telefon kameranızla bu QR kodu okutarak yarışma Wi-Fi ağına bağlanabilirsiniz:</div>
-        <div class="qr-box">
-          <img src="${defaultWifiQrDataUrl}" alt="Wi-Fi QR Kodu" />
-        </div>
-        <div class="info-box">
-          Ağ Adı (SSID): <strong>${DEFAULT_WIFI_SSID}</strong><br/>
-          Şifre: <strong>${DEFAULT_WIFI_PASS}</strong>
-        </div>
+      <div class="info-box">
+        Web Adresi:<br/>
+        <strong>${GITHUB_PAGES_URL}</strong>
       </div>
     </div>
   </div>

@@ -7,8 +7,6 @@ import { createStudioRouter } from './routes/studio.routes';
 
 const PORT = Number(process.env.PORT) || 3000;
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const DEFAULT_WIFI_SSID = 'SUPERBOX_Wi-Fi_6306';
-const DEFAULT_WIFI_PASS = '2wR83g6763';
 
 const app = express();
 const storage = new StorageService(PROJECT_ROOT);
@@ -24,25 +22,19 @@ app.use('/kaydedilen_fotograflar', express.static(storage.getCapturesDir()));
 // Stüdyo API rotaları
 app.use('/api', createStudioRouter(storage, PORT));
 
-// Yazdırılabilir A4 Wi-Fi + Stüdyo Giriş QR Afişi (/afis)
+// Yazdırılabilir A4 Stüdyo Giriş QR Afişi (/afis)
 app.get('/afis', async (req: Request, res: Response) => {
-  const ssid = typeof req.query.ssid === 'string' && req.query.ssid.trim() ? req.query.ssid.trim() : DEFAULT_WIFI_SSID;
-  const pass = typeof req.query.pass === 'string' ? req.query.pass : DEFAULT_WIFI_PASS;
   const netInfo = getNetworkInfo(PORT, storage.getBackgroundsDir(), storage.getCapturesDir());
   const studioUrl = typeof req.query.url === 'string' && req.query.url.trim() ? req.query.url.trim() : netInfo.recommendedBaseUrl;
 
-  const wifiPayload = `WIFI:T:WPA;S:${ssid};P:${pass};H:false;;`;
-  const [wifiQr, studioQr] = await Promise.all([
-    QRCode.toDataURL(wifiPayload, { errorCorrectionLevel: 'M', margin: 2, width: 420 }),
-    QRCode.toDataURL(studioUrl, { errorCorrectionLevel: 'M', margin: 2, width: 420 }),
-  ]);
+  const studioQr = await QRCode.toDataURL(studioUrl, { errorCorrectionLevel: 'M', margin: 2, width: 420 });
 
   res.send(`<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mirasın Kodları — Wi-Fi &amp; Fotoğraf Stüdyosu QR Afişi</title>
+  <title>Mirasın Kodları — Yeşil Perde Fotoğraf Stüdyosu QR Afişi</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -72,10 +64,10 @@ app.get('/afis', async (req: Request, res: Response) => {
     }
     .poster {
       width: 100%;
-      max-width: 920px;
+      max-width: 640px;
       background: #111318;
       border: 4px solid #F59E0B;
-      padding: 36px 32px;
+      padding: 40px 32px;
       text-align: center;
     }
     .tag {
@@ -91,24 +83,19 @@ app.get('/afis', async (req: Request, res: Response) => {
     }
     h1 {
       margin: 0 0 8px;
-      font-size: 36px;
+      font-size: 32px;
       color: #FFFFFF;
       letter-spacing: -0.02em;
     }
     .subtitle {
       color: #D1D5DB;
-      font-size: 17px;
-      margin-bottom: 28px;
-    }
-    .steps {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      font-size: 16px;
+      margin-bottom: 26px;
     }
     .step-card {
       background: #181B22;
       border: 2px solid #262A34;
-      padding: 24px 20px;
+      padding: 28px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -118,7 +105,7 @@ app.get('/afis', async (req: Request, res: Response) => {
       color: #090A0C;
       font-family: monospace;
       font-weight: 800;
-      font-size: 14px;
+      font-size: 13px;
       padding: 5px 14px;
       margin-bottom: 12px;
     }
@@ -129,18 +116,19 @@ app.get('/afis', async (req: Request, res: Response) => {
       color: #F59E0B;
     }
     .step-desc {
-      font-size: 14px;
+      font-size: 15px;
       color: #D1D5DB;
-      margin-bottom: 16px;
-      line-height: 1.45;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      max-width: 460px;
     }
     .qr-box {
       background: #FFFFFF;
-      padding: 14px;
+      padding: 16px;
       border: 4px solid #F59E0B;
-      width: 260px;
-      height: 260px;
-      margin-bottom: 16px;
+      width: 300px;
+      height: 300px;
+      margin-bottom: 20px;
     }
     .qr-box img {
       width: 100%;
@@ -156,6 +144,7 @@ app.get('/afis', async (req: Request, res: Response) => {
       font-size: 14px;
       color: #F3F4F6;
       line-height: 1.6;
+      word-break: break-all;
     }
     .info-box strong {
       color: #F59E0B;
@@ -180,31 +169,17 @@ app.get('/afis', async (req: Request, res: Response) => {
   <div class="poster">
     <div class="tag">MİRASIN KODLARI YARIŞMASI</div>
     <h1>YEŞİL PERDE HATIRA FOTOĞRAF STÜDYOSU</h1>
-    <div class="subtitle">Kendi telefonunuzla arka plan seçip fotoğraf çekilmek için aşağıdaki 2 adımı izleyin:</div>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-num">1. ADIM</div>
-        <div class="step-title">Wİ-Fİ AĞINA BAĞLANIN</div>
-        <div class="step-desc">Telefon kameranızla bu QR kodu okutarak yarışma Wi-Fi ağına otomatik bağlanın:</div>
-        <div class="qr-box">
-          <img src="${wifiQr}" alt="Wi-Fi QR Kodu" />
-        </div>
-        <div class="info-box">
-          Ağ Adı (SSID): <strong>${ssid}</strong><br/>
-          Şifre: <strong>${pass}</strong>
-        </div>
+    <div class="subtitle">Telefon kameranızla aşağıdaki QR kodu okutarak doğrudan stüdyoya bağlanabilirsiniz:</div>
+    <div class="step-card">
+      <div class="step-num">TELEFON KAMERANIZLA OKUTUN</div>
+      <div class="step-title">FOTOĞRAF STÜDYOSUNU AÇIN</div>
+      <div class="step-desc">QR kodu okutun, yarışma arka planınızı seçip yeşil perde önünde fotoğrafınızı çekin ve doğrudan telefonunuza indirin:</div>
+      <div class="qr-box">
+        <img src="${studioQr}" alt="Stüdyo Giriş QR Kodu" />
       </div>
-      <div class="step-card">
-        <div class="step-num">2. ADIM</div>
-        <div class="step-title">FOTOĞRAF STÜDYOSUNU AÇIN</div>
-        <div class="step-desc">Wi-Fi'ye bağlandıktan sonra bu QR kodu okutun, arka planınızı seçip fotoğrafınızı çekin ve indirin:</div>
-        <div class="qr-box">
-          <img src="${studioQr}" alt="Stüdyo Giriş QR Kodu" />
-        </div>
-        <div class="info-box">
-          Stüdyo Adresi:<br/>
-          <strong>${studioUrl}</strong>
-        </div>
+      <div class="info-box">
+        Stüdyo Adresi:<br/>
+        <strong>${studioUrl}</strong>
       </div>
     </div>
   </div>

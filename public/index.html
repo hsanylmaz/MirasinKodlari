@@ -22,7 +22,7 @@
 
     <div class="header-actions">
       <button type="button" class="btn btn-emerald" id="btnOpenWifiStand" title="Öğrencilerin telefonlarıyla stüdyoya girmesi için QR panosunu açar">
-        📡 GİRİŞ &amp; Wİ-Fİ QR PANOSU
+        📱 STÜDYO GİRİŞ QR KODU
       </button>
       <button type="button" class="btn" id="btnOpenGallery">
         GALERİ (<span id="photoCountBadge">0</span>)
@@ -267,7 +267,7 @@
     </aside>
   </main>
 
-  <!-- Giriş QR + Wi-Fi QR Karşılama Panosu Modalı -->
+  <!-- Stüdyo Giriş QR Karşılama Panosu Modalı -->
   <div class="modal-backdrop hidden" id="wifiStandModal" role="dialog" aria-modal="true" aria-labelledby="wifiStandTitle">
     <div class="stand-modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-tech); padding-bottom:12px; flex-wrap:wrap; gap:10px;">
@@ -288,14 +288,13 @@
       </div>
 
       <div class="stand-grid">
-        <!-- 1. KART: DOĞRUDAN STÜDYO GİRİŞ QR KODU (GITHUB PAGES / WEB) -->
         <div class="stand-step-box">
-          <div class="stand-step-badge">DOĞRUDAN GİRİŞ (MOBİL İNTERNET VEYA Wİ-Fİ)</div>
-          <p style="font-size:13px; color:var(--text-muted);">
+          <div class="stand-step-badge">TELEFON KAMERANIZLA OKUTUN</div>
+          <p style="font-size:14px; color:var(--text-muted); max-width:440px;">
             Telefon kameranızla bu QR kodu okutun; stüdyo doğrudan telefonunuzda açılsın, arka planınızı seçip fotoğrafınızı çekin ve indirin!
           </p>
 
-          <div class="qr-frame">
+          <div class="qr-frame" style="width:260px; height:260px;">
             <img id="studioEntryQrImg" src="" alt="Stüdyo Giriş QR Kodu" />
           </div>
 
@@ -307,45 +306,6 @@
             <div style="background:var(--bg-void); border:1px solid var(--border-strong); padding:10px; font-family:var(--font-mono); font-size:13px; color:var(--accent-amber); text-align:center; font-weight:700; word-break:break-all;" id="standStudioUrlText">
               https://hsanylmaz.github.io/MirasinKodlari/
             </div>
-          </div>
-        </div>
-
-        <!-- 2. KART: İSTEĞE BAĞLI Wİ-Fİ QR KODU -->
-        <div class="stand-step-box">
-          <div class="stand-step-badge" style="background:var(--accent-emerald);">İSTEĞE BAĞLI: STÜDYO Wİ-Fİ AĞI</div>
-          <p style="font-size:13px; color:var(--text-muted);">
-            Mobil internet paketiniz yoksa veya yerel ağdan bağlanmak istiyorsanız bu QR kodu okutarak Wi-Fi ağına otomatik bağlanabilirsiniz.
-          </p>
-
-          <div class="qr-frame" id="wifiQrFrame">
-            <div id="wifiQrPlaceholder" style="color:#111318; font-size:12px; font-weight:700; padding:12px;" class="hidden">
-              Wi-Fi QR Kodu Yükleniyor...
-            </div>
-            <img id="wifiQrImg" src="" alt="Wi-Fi Bağlantı QR Kodu" />
-          </div>
-
-          <div style="width:100%; text-align:left; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-            <div class="field-group" style="margin:0;">
-              <label class="field-label" for="inputWifiSsid">Wi-Fi Ağ Adı (SSID)</label>
-              <input type="text" id="inputWifiSsid" class="studio-input" value="SUPERBOX_Wi-Fi_6306" placeholder="Örn: SUPERBOX_Wi-Fi_6306" />
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 120px; gap:8px;">
-              <div>
-                <label class="field-label" for="inputWifiPassword">Wi-Fi Şifresi</label>
-                <input type="text" id="inputWifiPassword" class="studio-input" value="2wR83g6763" placeholder="Şifreyi yazın" />
-              </div>
-              <div>
-                <label class="field-label" for="selectWifiEnc">Güvenlik</label>
-                <select id="selectWifiEnc" class="studio-select">
-                  <option value="WPA" selected>WPA/WPA2</option>
-                  <option value="WEP">WEP</option>
-                  <option value="nopass">Şifresiz</option>
-                </select>
-              </div>
-            </div>
-            <button type="button" class="btn btn-emerald" id="btnGenerateWifiQr" style="padding:10px;">
-              ↻ Wİ-Fİ QR KODUNU GÜNCELLE
-            </button>
           </div>
         </div>
       </div>
