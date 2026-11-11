@@ -100,19 +100,8 @@ export function createStudioRouter(storage: StorageService, port: number): Route
     }
   });
 
-  router.post('/backgrounds', (req: Request, res: Response) => {
-    try {
-      const { fileName, dataUrl } = req.body as { fileName?: string; dataUrl?: string };
-      if (!fileName || !dataUrl) {
-        res.status(400).json({ success: false, error: 'Dosya adı ve görsel verisi zorunludur.' });
-        return;
-      }
-      const saved = storage.saveUploadedBackground(fileName, dataUrl);
-      res.status(201).json({ success: true, data: saved });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Arka plan kaydedilemedi.';
-      res.status(400).json({ success: false, error: message });
-    }
+  router.post('/backgrounds', (_req: Request, res: Response) => {
+    res.status(403).json({ success: false, error: 'Dışarıdan arka plan yükleme kapatılmıştır. Sadece arkaplanlar/ klasöründeki görseller kullanılabilir.' });
   });
 
   router.get('/photos', (req: Request, res: Response) => {

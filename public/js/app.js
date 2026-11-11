@@ -33,8 +33,6 @@
     countdownNumber: document.getElementById('countdownNumber'),
     shutterFlash: document.getElementById('shutterFlash'),
     backgroundsList: document.getElementById('backgroundsList'),
-    bgFileInput: document.getElementById('bgFileInput'),
-    btnUploadBg: document.getElementById('btnUploadBg'),
     btnRefreshBgs: document.getElementById('btnRefreshBgs'),
 
     // Mobil / Telefon Kamera Elemanları
@@ -786,63 +784,13 @@
       window.ChromaEngine.updateConfig({ mirror: els.chkMirror.checked });
     });
 
-    // Arka Plan Klasör Yenileme ve Yükleme
+    // Arka Plan Klasör Yenileme
     els.btnRefreshBgs.addEventListener('click', async () => {
       els.btnRefreshBgs.textContent = '↻...';
       await loadBackgrounds();
       setTimeout(() => {
         els.btnRefreshBgs.textContent = '↻ YENİLE';
       }, 300);
-    });
-
-    els.btnUploadBg.addEventListener('click', () => {
-      els.bgFileInput.click();
-    });
-
-    els.bgFileInput.addEventListener('change', () => {
-      const file = els.bgFileInput.files && els.bgFileInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const dataUrl = String(reader.result || '');
-        if (!state.isStaticHosting) {
-          try {
-            const res = await fetch('./api/backgrounds', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                fileName: file.name,
-                dataUrl,
-              }),
-            });
-            if (res.ok) {
-              const json = await res.json();
-              if (json.success && json.data) {
-                await loadBackgrounds();
-                selectBackground(json.data);
-                els.bgFileInput.value = '';
-                return;
-              }
-            }
-          } catch {
-            // Fallback to client-side background addition
-          }
-        }
-
-        // GitHub Pages / Tarayıcı İçi Anında Arka Plan Ekleme
-        const localBg = {
-          id: `custom_${Date.now()}`,
-          fileName: file.name,
-          title: file.name.replace(/\.[^.]+$/, ''),
-          url: dataUrl,
-          updatedAt: new Date().toISOString(),
-        };
-        state.backgrounds.push(localBg);
-        renderBackgroundsStrip();
-        selectBackground(localBg);
-        els.bgFileInput.value = '';
-      };
-      reader.readAsDataURL(file);
     });
 
     // Stüdyo Giriş QR Panosu
