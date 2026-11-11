@@ -16,7 +16,7 @@ const SITE_DIR = path.join(PROJECT_ROOT, '_site');
 const GITHUB_USERNAME = 'hsanylmaz';
 const REPO_NAME = process.env.GITHUB_REPOSITORY
   ? process.env.GITHUB_REPOSITORY.split('/')[1]
-  : 'Mirasin_Kodlari';
+  : 'MirasinKodlari';
 const GITHUB_PAGES_URL = `https://${GITHUB_USERNAME}.github.io/${REPO_NAME}/`;
 
 const DEFAULT_WIFI_SSID = 'SUPERBOX_Wi-Fi_6306';

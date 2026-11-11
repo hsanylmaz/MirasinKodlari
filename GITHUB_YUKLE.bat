@@ -14,11 +14,11 @@ git config user.email "hsanylmaz@users.noreply.github.com"
 git add .
 git commit -m "Arka planlar ve studyo guncellendi"
 echo.
-echo [3/3] GitHub'a (https://github.com/hsanylmaz/Mirasin_Kodlari) gonderiliyor...
+echo [3/3] GitHub'a (https://github.com/hsanylmaz/MirasinKodlari) gonderiliyor...
 git push -u origin main
 echo.
 echo ============================================================
 echo   ISLEM TAMAMLANDI!
-echo   Canli Adresiniz: https://hsanylmaz.github.io/Mirasin_Kodlari/
+echo   Canli Adresiniz: https://hsanylmaz.github.io/MirasinKodlari/
 echo ============================================================
 pause

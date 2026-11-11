@@ -1,6 +1,6 @@
 (function () {
   const WIFI_STORAGE_KEY = 'mirasin_kodlari_wifi_config';
-  const GITHUB_PAGES_DEFAULT_URL = 'https://hsanylmaz.github.io/Mirasin_Kodlari/';
+  const GITHUB_PAGES_DEFAULT_URL = 'https://hsanylmaz.github.io/MirasinKodlari/';
 
   const state = {
     isStaticHosting: false,
