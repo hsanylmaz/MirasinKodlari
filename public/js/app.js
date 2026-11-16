@@ -738,10 +738,12 @@
 
   function bindEvents() {
     // Canlı Kamerayı Ön / Arka Değiştirme (Mobil HTTPS / GitHub Pages için)
-    els.btnFlipLiveCamera.addEventListener('click', async () => {
-      const nextFacing = state.currentFacingMode === 'user' ? 'environment' : 'user';
-      await initCameraDevices(nextFacing);
-    });
+    if (els.btnFlipLiveCamera) {
+      els.btnFlipLiveCamera.addEventListener('click', async () => {
+        const nextFacing = state.currentFacingMode === 'user' ? 'environment' : 'user';
+        await initCameraDevices(nextFacing);
+      });
+    }
 
     // Telefon Kamerası & Galeri Girişleri
     if (els.btnMobileRearCam && els.mobileRearCameraInput) {
@@ -915,7 +917,9 @@
     if (els.btnToggleAspectFit) {
       els.btnToggleAspectFit.addEventListener('click', () => {
         const isContain = els.stageCanvas.classList.toggle('contain-mode');
-        els.btnToggleAspectFit.textContent = isContain ? '⛶ KADRAJ: TAM 16:9' : '⛶ KADRAJ: DOLU';
+        els.btnToggleAspectFit.innerHTML = isContain
+          ? '<span>⛶ KADRAJ: TAM 16:9</span>'
+          : '<span>⛶ KADRAJ: DOLU</span>';
       });
     }
 

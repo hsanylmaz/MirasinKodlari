@@ -161,36 +161,21 @@ html, body {
     display: none;
   }
   .mobile-camera-bar {
-    padding: 8px;
-    gap: 8px;
-    flex-direction: column;
-    align-items: stretch;
+    padding: 6px 8px;
+    gap: 6px;
   }
-  .mobile-camera-bar-primary {
+  .mobile-camera-actions {
     display: grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap: 8px;
-    width: 100%;
-  }
-  .btn-shutter-mobile {
-    padding: 13px 8px;
-    font-size: 14px;
-  }
-  .mobile-camera-bar #btnQuickDownloadToDevice {
-    padding: 13px 8px;
-    font-size: 13px;
-  }
-  .mobile-camera-bar-secondary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
     width: 100%;
   }
-  .mobile-camera-bar-secondary .btn {
-    padding: 10px 6px;
+  .mobile-camera-actions .btn {
+    padding: 10px 4px;
     font-size: 11px;
     width: 100%;
     justify-content: center;
+    white-space: nowrap;
   }
   .filmstrip-dock {
     min-height: 110px;
@@ -274,24 +259,31 @@ html, body {
 .mobile-camera-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-strong);
   padding: 8px 12px;
-  flex-wrap: wrap;
 }
 
-.mobile-camera-bar-primary {
+.mobile-camera-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
 }
 
-.mobile-camera-bar-secondary {
-  display: flex;
+.mobile-camera-actions .btn {
+  flex: 1 1 0;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .btn-shutter-mobile {
@@ -1098,8 +1090,7 @@ html, body {
    DİKEY (PORTRAIT) vs YATAY (LANDSCAPE) ÖNİZLEME & DEKLANŞÖR KURALLARI
    ========================================================================== */
 
-/* 1. DİKEY (PORTRAIT) MOD: Büyük, Yüksek Önizleme & ALT ORTADA Deklanşör */
-html.is-portrait .stage-column,
+/* 1. DİKEY (PORTRAIT) MOD: Büyük, Yüksek Önizleme (%50 Daha Büyük) & ALT ORTADA Deklanşör */
 @media (orientation: portrait), (max-aspect-ratio: 1/1) {
   .stage-column {
     padding: 6px !important;
@@ -1109,10 +1100,10 @@ html.is-portrait .stage-column,
   .viewfinder-shell {
     position: relative !important;
     width: 100% !important;
-    /* Dikey modda telefon ekranının ~74%'ünü kaplayan dev, ferah kamera ekranı */
-    height: clamp(500px, 74vh, 720px) !important;
-    min-height: 500px !important;
-    max-height: 82vh !important;
+    /* Dikey modda önizleme ekranını %50 daha büyük yap: clamp ile 76vh ve min 520px */
+    height: clamp(520px, 76vh, 850px) !important;
+    min-height: 520px !important;
+    max-height: 86vh !important;
     aspect-ratio: auto !important;
     border-radius: 8px !important;
     overflow: hidden !important;
@@ -1136,10 +1127,6 @@ html.is-portrait .stage-column,
     object-fit: contain !important;
   }
 
-  .mobile-camera-bar-primary {
-    display: none !important; /* Deklanşör önizleme üzerinde olduğu için alt barı sadeleştir */
-  }
-
   /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA */
   .hud-shutter-overlay {
     top: auto !important;
@@ -1153,7 +1140,7 @@ html.is-portrait .stage-column,
     gap: 24px !important;
     padding: 12px 20px !important;
     border-radius: 50px !important;
-    background: rgba(9, 10, 12, 0.55) !important;
+    background: rgba(9, 10, 12, 0.6) !important;
     backdrop-filter: blur(10px) !important;
     -webkit-backdrop-filter: blur(10px) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -1176,9 +1163,77 @@ html.is-portrait .stage-column,
   }
 }
 
+/* JS orientation class fallback for portrait */
+html.is-portrait .stage-column {
+  padding: 6px !important;
+  gap: 8px !important;
+}
+
+html.is-portrait .viewfinder-shell {
+  position: relative !important;
+  width: 100% !important;
+  height: clamp(520px, 76vh, 850px) !important;
+  min-height: 520px !important;
+  max-height: 86vh !important;
+  aspect-ratio: auto !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #000000 !important;
+}
+
+html.is-portrait #stageCanvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
+}
+
+html.is-portrait #stageCanvas.contain-mode {
+  object-fit: contain !important;
+}
+
+html.is-portrait .hud-shutter-overlay {
+  top: auto !important;
+  bottom: 20px !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 24px !important;
+  padding: 12px 20px !important;
+  border-radius: 50px !important;
+  background: rgba(9, 10, 12, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75) !important;
+  width: auto !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 50 !important;
+}
+
+html.is-portrait .hud-shutter-button {
+  width: 76px !important;
+  height: 76px !important;
+}
+
+html.is-portrait .hud-btn {
+  width: 50px !important;
+  height: 50px !important;
+}
+
 /* 2. YATAY (LANDSCAPE) MOD: 16:9 Ekrana Sığan Önizleme & SAĞ ORTADA Deklanşör */
-html.is-landscape .stage-column,
-@media (orientation: landscape) and (max-width: 1080px), (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 520px), (orientation: landscape) and (max-width: 1024px) {
   .stage-column {
     padding: 4px !important;
     gap: 6px !important;
@@ -1189,7 +1244,6 @@ html.is-landscape .stage-column,
 
   .viewfinder-shell {
     position: relative !important;
-    /* Yatay modda telefon ekranının yüksekliğine tam sığar (taşma yapmaz) */
     height: calc(100dvh - 54px) !important;
     max-height: calc(100vh - 54px) !important;
     min-height: 0 !important;
@@ -1212,10 +1266,6 @@ html.is-landscape .stage-column,
     aspect-ratio: 16 / 9 !important;
     object-fit: contain !important;
     display: block !important;
-  }
-
-  .mobile-camera-bar-primary {
-    display: none !important;
   }
 
   /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ ORTADA */
@@ -1252,6 +1302,91 @@ html.is-landscape .stage-column,
     width: 44px !important;
     height: 44px !important;
   }
+
+  .filmstrip-dock {
+    display: none !important;
+  }
+
+  .mobile-camera-bar {
+    display: none !important;
+  }
+}
+
+/* JS orientation class fallback for landscape */
+html.is-landscape .stage-column {
+  padding: 4px !important;
+  gap: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+html.is-landscape .viewfinder-shell {
+  position: relative !important;
+  height: calc(100dvh - 54px) !important;
+  max-height: calc(100vh - 54px) !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  background: #000000 !important;
+}
+
+html.is-landscape #stageCanvas {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 16 / 9 !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+html.is-landscape .hud-shutter-overlay {
+  top: 50% !important;
+  bottom: auto !important;
+  right: max(14px, env(safe-area-inset-right, 14px)) !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 12px 8px !important;
+  border-radius: 40px !important;
+  background: rgba(9, 10, 12, 0.55) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75) !important;
+  width: auto !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 50 !important;
+}
+
+html.is-landscape .hud-shutter-button {
+  width: 62px !important;
+  height: 62px !important;
+}
+
+html.is-landscape .hud-btn {
+  width: 44px !important;
+  height: 44px !important;
+}
+
+html.is-landscape .filmstrip-dock {
+  display: none !important;
+}
+
+html.is-landscape .mobile-camera-bar {
+  display: none !important;
 }
 
 @media print {

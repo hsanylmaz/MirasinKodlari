@@ -50,7 +50,7 @@
         <!-- Üst Vizör Bilgi Etiketleri -->
         <div class="hud-overlay-top">
           <div class="hud-tag" id="activeBgLabel">SAHNE: YÜKLENİYOR...</div>
-          <button type="button" class="hud-tag amber" id="btnToggleAspectFit" style="pointer-events:auto; cursor:pointer;" title="Kadraj Modu: Ekranı Doldur veya Tam Sığdır">⛶ KADRAJ: DOLU</button>
+          <div class="hud-tag amber hide-on-mobile" id="resolutionTag">1080P FULL HD • CHROMA KEY AKTİF</div>
         </div>
 
         <!-- Kamera İzin / Başlatma İstemi (Tarayıcı İzinleri İçin) -->
@@ -111,21 +111,15 @@
         <!-- Galeriden Fotoğraf Seçme Input -->
         <input type="file" id="mobileGalleryInput" accept="image/*" class="hidden" />
 
-        <div class="mobile-camera-bar-primary">
-          <button type="button" class="btn btn-shutter-mobile" id="btnCapturePhotoMobile" title="Fotoğraf çek ve sonucu gör">
-            <span>📸 FOTOĞRAF ÇEK</span>
-          </button>
+        <div class="mobile-camera-actions">
           <button type="button" class="btn btn-emerald" id="btnQuickDownloadToDevice" title="Oluşan fotoğrafı doğrudan bu telefona/cihaza indirir">
             <span>⬇ CİHAZA İNDİR</span>
           </button>
-        </div>
-
-        <div class="mobile-camera-bar-secondary">
-          <button type="button" class="btn btn-amber" id="btnFlipLiveCamera" title="Canlı kamerayı Ön (Selfie) ve Arka kamera arasında değiştir">
-            🔄 KAMERA ÇEVİR
+          <button type="button" class="btn btn-amber" id="btnToggleAspectFit" title="Kadraj Modu: Ekranı Doldur veya Tam 16:9 Sığdır">
+            <span>⛶ KADRAJ: DOLU</span>
           </button>
           <button type="button" class="btn" id="btnMobileGallery" title="Telefondaki veya bilgisayardaki bir yeşil perde fotoğrafını yükle">
-            🖼 FOTOĞRAF YÜKLE
+            <span>🖼 FOTOĞRAF YÜKLE</span>
           </button>
           <button type="button" class="btn hidden" id="btnMobileRearCam" title="Cihaz kamerası ile çek">
             📷 KAMERA
