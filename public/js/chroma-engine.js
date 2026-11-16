@@ -27,7 +27,7 @@ window.ChromaEngine = (function () {
     mirror: true,
     showRawGreen: false,
     showFrameOverlay: true,
-    subjectFitMode: 'cover',
+    subjectFitMode: 'fit', // 'fit' (doğal 1x, yakınlaştırmasız) veya 'cover' (dolu)
     eventTitle: 'MİRASIN KODLARI',
     eventSubtitle: 'YAZILIM & TEKNOLOJİ YARIŞMASI HATIRASI',
     participantName: '',
@@ -211,22 +211,9 @@ window.ChromaEngine = (function () {
 
     const srcRatio = srcW / srcH;
     const targetRatio = targetW / targetH;
-    const isDeviceLandscape =
-      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
-      window.innerWidth > window.innerHeight;
 
-    // YATAY MODDA (LANDSCAPE): Kamera görüntüsü her zaman 16:9 geniş ekranı doldurur (cover).
-    // DİKEY MODDA (PORTRAIT): Sadece kullanıcı TAM 16:9 modu (contain) seçtiğinde fit-height uygular;
-    // varsayılan DOLU modunda doğal cover uygular.
-    const shouldFitPortraitHeight =
-      !isDeviceLandscape && config.subjectFitMode === 'contain' && srcRatio < 0.95 && targetRatio >= 1;
-
-    if (shouldFitPortraitHeight) {
-      const destH = targetH;
-      const destW = destH * srcRatio;
-      const destX = (targetW - destW) * 0.5;
-      ctx.drawImage(img, 0, 0, srcW, srcH, destX, 0, destW, destH);
-    } else {
+    // Eğer kullanıcı 'cover' (Dolu) modunu seçtiyse görüntüyü kırparak tüm canvas'ı kaplar:
+    if (config.subjectFitMode === 'cover') {
       let sWidth = srcW;
       let sHeight = srcH;
       let sx = 0;
@@ -241,6 +228,18 @@ window.ChromaEngine = (function () {
       }
 
       ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+    } else {
+      // DOĞAL 1X / GENİŞ AÇI MODU (VARSAYILAN):
+      // Ön ve arka kamerada yüzün aşırı yakınlaşmasını (crop zoom) tamamen engeller.
+      // Kameranın yüksekliğini ve genişliğini 100% koruyarak 16:9 canvas içerisine ortalar.
+      // Kişi doğal mesafesinde görünür, etrafındaki yeşil perde silinerek yarışma arka planı görünür.
+      const scale = Math.min(targetW / srcW, targetH / srcH);
+      const destW = srcW * scale;
+      const destH = srcH * scale;
+      const destX = (targetW - destW) * 0.5;
+      const destY = (targetH - destH) * 0.5;
+
+      ctx.drawImage(img, 0, 0, srcW, srcH, destX, destY, destW, destH);
     }
 
     ctx.restore();

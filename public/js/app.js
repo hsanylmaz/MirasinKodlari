@@ -347,21 +347,32 @@
     state.currentFacingMode = facingMode;
 
     const requestUserMediaWithFallback = async () => {
-      // 1. Önce cihazın yönüne (dikey/yatay) uygun ideal çözünürlükle dene
+      // 1. Önce cihazın yönüne (dikey/yatay) ve kamera türüne göre ideal çözünürlükle dene
       const isPortrait =
         (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ||
         window.innerHeight > window.innerWidth;
+
       try {
+        const videoConstraints = {
+          facingMode: { ideal: facingMode },
+        };
+        // Arka kamera 16:9 HD destekler. Ön kamera ise doğal 4:3 geniş açılıdır.
+        // Ön kameraya zorla 16:9 çözünürlük istenirse mobil tarayıcı sürücüsü görüntüyü
+        // sensörden keserek aşırı yakınlaştırır. Bu yüzden ön kamerada doğal kırpmasız sensör oranı istenir:
+        if (facingMode === 'user') {
+          videoConstraints.width = { ideal: isPortrait ? 960 : 1280 };
+          videoConstraints.height = { ideal: isPortrait ? 1280 : 960 };
+        } else {
+          videoConstraints.width = { ideal: isPortrait ? 1080 : 1920 };
+          videoConstraints.height = { ideal: isPortrait ? 1920 : 1080 };
+        }
+
         return await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: facingMode },
-            width: { ideal: isPortrait ? 1080 : 1920 },
-            height: { ideal: isPortrait ? 1920 : 1080 },
-          },
+          video: videoConstraints,
           audio: false,
         });
       } catch (err1) {
-        console.warn('Yüksek çözünürlük açılamadı, esnek çözünürlük deneniyor:', err1);
+        console.warn('İdeal kamera çözünürlüğü açılamadı, esnek çözünürlük deneniyor:', err1);
       }
 
       // 2. Çözünürlük kısıtı olmadan sadece yön ile dene
@@ -936,13 +947,13 @@
 
     if (els.btnToggleAspectFit) {
       els.btnToggleAspectFit.addEventListener('click', () => {
-        const isContain = els.stageCanvas.classList.toggle('contain-mode');
+        const isCover = els.stageCanvas.classList.toggle('cover-mode');
         window.ChromaEngine.updateConfig({
-          subjectFitMode: isContain ? 'contain' : 'cover',
+          subjectFitMode: isCover ? 'cover' : 'fit',
         });
-        els.btnToggleAspectFit.innerHTML = isContain
-          ? '<span>⛶ KADRAJ: TAM 16:9</span>'
-          : '<span>⛶ KADRAJ: DOLU</span>';
+        els.btnToggleAspectFit.innerHTML = isCover
+          ? '<span>⛶ KADRAJ: DOLU</span>'
+          : '<span>⛶ KADRAJ: DOĞAL</span>';
       });
     }
 

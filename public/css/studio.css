@@ -1120,13 +1120,13 @@ html, body {
     max-width: 100% !important;
     max-height: 100% !important;
     aspect-ratio: 16 / 9 !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
     object-position: center !important;
     display: block !important;
   }
 
-  #stageCanvas.contain-mode {
-    object-fit: contain !important;
+  #stageCanvas.cover-mode {
+    object-fit: cover !important;
   }
 
   /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA (16:9 İÇİNDE) */
@@ -1193,13 +1193,13 @@ html.is-portrait #stageCanvas {
   max-width: 100% !important;
   max-height: 100% !important;
   aspect-ratio: 16 / 9 !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center !important;
   display: block !important;
 }
 
-html.is-portrait #stageCanvas.contain-mode {
-  object-fit: contain !important;
+html.is-portrait #stageCanvas.cover-mode {
+  object-fit: cover !important;
 }
 
 html.is-portrait .hud-shutter-overlay {
@@ -1286,8 +1286,8 @@ html.is-portrait .hud-btn {
     display: block !important;
   }
 
-  #stageCanvas.contain-mode {
-    object-fit: contain !important;
+  #stageCanvas.cover-mode {
+    object-fit: cover !important;
   }
 
   /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ ORTADA */
@@ -1434,8 +1434,8 @@ html.is-landscape #stageCanvas {
   display: block !important;
 }
 
-html.is-landscape #stageCanvas.contain-mode {
-  object-fit: contain !important;
+html.is-landscape #stageCanvas.cover-mode {
+  object-fit: cover !important;
 }
 
 html.is-landscape .hud-shutter-overlay {
