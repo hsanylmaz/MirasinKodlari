@@ -43,6 +43,7 @@
     btnHudCapturePhoto: document.getElementById('btnHudCapturePhoto'),
     btnHudFlipCamera: document.getElementById('btnHudFlipCamera'),
     btnHudQuickDownload: document.getElementById('btnHudQuickDownload'),
+    btnToggleAspectFit: document.getElementById('btnToggleAspectFit'),
 
     // Mobil / Telefon Kamera Elemanları
     mobileRearCameraInput: document.getElementById('mobileRearCameraInput'),
@@ -328,18 +329,19 @@
     state.currentFacingMode = facingMode;
 
     const requestUserMediaWithFallback = async () => {
-      // 1. Önce ideal 1080p ve belirtilen yön ile dene
+      // 1. Önce cihazın yönüne (dikey/yatay) uygun ideal çözünürlükle dene
+      const isPortrait = window.innerHeight > window.innerWidth;
       try {
         return await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: facingMode },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: isPortrait ? 1080 : 1920 },
+            height: { ideal: isPortrait ? 1920 : 1080 },
           },
           audio: false,
         });
       } catch (err1) {
-        console.warn('1080p kamera açılamadı, esnek çözünürlük deneniyor:', err1);
+        console.warn('Yüksek çözünürlük açılamadı, esnek çözünürlük deneniyor:', err1);
       }
 
       // 2. Çözünürlük kısıtı olmadan sadece yön ile dene
@@ -907,6 +909,13 @@
       els.btnHudFlipCamera.addEventListener('click', async () => {
         const nextFacing = state.currentFacingMode === 'user' ? 'environment' : 'user';
         await initCameraDevices(nextFacing);
+      });
+    }
+
+    if (els.btnToggleAspectFit) {
+      els.btnToggleAspectFit.addEventListener('click', () => {
+        const isContain = els.stageCanvas.classList.toggle('contain-mode');
+        els.btnToggleAspectFit.textContent = isContain ? '⛶ KADRAJ: TAM 16:9' : '⛶ KADRAJ: DOLU';
       });
     }
 

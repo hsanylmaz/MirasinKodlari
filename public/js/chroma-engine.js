@@ -197,6 +197,49 @@ window.ChromaEngine = (function () {
     ctx.restore();
   }
 
+  function drawSubjectImage(ctx, img, targetW, targetH, mirror) {
+    const srcW = img.videoWidth || img.naturalWidth || img.width || targetW;
+    const srcH = img.videoHeight || img.naturalHeight || img.height || targetH;
+    if (!srcW || !srcH) return;
+
+    ctx.save();
+    if (mirror) {
+      ctx.translate(targetW, 0);
+      ctx.scale(-1, 1);
+    }
+
+    const srcRatio = srcW / srcH;
+    const targetRatio = targetW / targetH;
+
+    // Eğer kaynak kamera dikey (portrait, örn: mobilde dik tutulan ön/arka kamera)
+    // ve hedef canvas yatay (16:9) ise:
+    // Standart cover dikeyde görüntüyü %68 kırparak yüze aşırı yakınlaştırır.
+    // Kişinin tüm boyunu korumak için dikeyde tam sığdırıp (fit-height) ortalıyoruz:
+    if (srcRatio < 0.95 && targetRatio >= 1) {
+      const destH = targetH;
+      const destW = destH * srcRatio;
+      const destX = (targetW - destW) * 0.5;
+      ctx.drawImage(img, 0, 0, srcW, srcH, destX, 0, destW, destH);
+    } else {
+      let sWidth = srcW;
+      let sHeight = srcH;
+      let sx = 0;
+      let sy = 0;
+
+      if (srcRatio > targetRatio) {
+        sWidth = srcH * targetRatio;
+        sx = (srcW - sWidth) * 0.5;
+      } else {
+        sHeight = srcW / targetRatio;
+        sy = (srcH - sHeight) * 0.5;
+      }
+
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, targetW, targetH);
+    }
+
+    ctx.restore();
+  }
+
   function drawCompetitionFrame(ctx, w, h) {
     if (!config.showFrameOverlay) return;
 
@@ -308,7 +351,7 @@ window.ChromaEngine = (function () {
 
     if (config.showRawGreen || !config.enabled) {
       if (sourceElem) {
-        drawCoverImage(ctx, sourceElem, w, h, shouldMirror);
+        drawSubjectImage(ctx, sourceElem, w, h, shouldMirror);
       }
       return;
     }
@@ -322,7 +365,7 @@ window.ChromaEngine = (function () {
 
     if (sourceElem) {
       offscreenCtx.clearRect(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
-      drawCoverImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
+      drawSubjectImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
       const frameData = offscreenCtx.getImageData(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
       applyChromaKeyToImageData(frameData);
       offscreenCtx.putImageData(frameData, 0, 0);
@@ -359,7 +402,7 @@ window.ChromaEngine = (function () {
       hiSubjectCanvas.height = OUTPUT_HEIGHT;
       const hiCtx = hiSubjectCanvas.getContext('2d', { willReadFrequently: true });
 
-      drawCoverImage(hiCtx, sourceElem, OUTPUT_WIDTH, OUTPUT_HEIGHT, shouldMirror);
+      drawSubjectImage(hiCtx, sourceElem, OUTPUT_WIDTH, OUTPUT_HEIGHT, shouldMirror);
       if (config.enabled) {
         const frameData = hiCtx.getImageData(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
         applyChromaKeyToImageData(frameData);
@@ -382,7 +425,7 @@ window.ChromaEngine = (function () {
     if (!sourceElem) return null;
 
     offscreenCtx.clearRect(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
-    drawCoverImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
+    drawSubjectImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
     const px = Math.max(0, Math.min(PROCESS_WIDTH - 1, Math.floor(normX * PROCESS_WIDTH)));
     const py = Math.max(0, Math.min(PROCESS_HEIGHT - 1, Math.floor(normY * PROCESS_HEIGHT)));
     const pixel = offscreenCtx.getImageData(px, py, 1, 1).data;

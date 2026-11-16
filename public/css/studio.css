@@ -1132,6 +1132,10 @@ html.is-portrait .stage-column,
     display: block !important;
   }
 
+  #stageCanvas.contain-mode {
+    object-fit: contain !important;
+  }
+
   .mobile-camera-bar-primary {
     display: none !important; /* Deklanşör önizleme üzerinde olduğu için alt barı sadeleştir */
   }
