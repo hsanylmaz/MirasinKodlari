@@ -164,15 +164,19 @@ html, body {
     object-fit: contain;
   }
   .hud-shutter-overlay {
-    padding: 20px 16px 12px;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px 6px;
+    gap: 10px;
   }
   .hud-shutter-button {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
   }
   .hud-btn {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
   }
 }
 
@@ -467,20 +471,26 @@ html, body {
   opacity: 0.92;
 }
 
-/* Kamera Önizlemesi Üzerinde Kayan Deklanşör Çubuğu (Native Kamera Modu) */
+/* Kamera Önizlemesi Sağ Tarafında Kayan Deklanşör & Çevir Çubuğu */
 .hud-shutter-overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 26px;
-  padding: 32px 16px 18px;
-  background: linear-gradient(to top, rgba(5, 6, 8, 0.82) 0%, rgba(5, 6, 8, 0.38) 60%, transparent 100%);
+  gap: 14px;
+  padding: 12px 8px;
+  background: rgba(9, 10, 12, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
   z-index: 22;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .viewfinder-shell.eyedropper-active .hud-shutter-overlay {
