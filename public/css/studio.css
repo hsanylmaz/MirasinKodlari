@@ -125,60 +125,7 @@ html, body {
   }
 }
 
-/* Dikey (Portrait) Modda Büyük & Ferah Kamera Önizlemesi */
-@media (max-width: 1080px) and (orientation: portrait), (max-width: 768px) and (orientation: portrait), (max-width: 600px) {
-  .stage-column {
-    padding: 8px;
-    gap: 10px;
-  }
-  .viewfinder-shell {
-    width: 100%;
-    /* Dikey modda önizleme telefon ekranının ~58%'ini kaplar */
-    height: clamp(380px, 58vh, 540px) !important;
-    min-height: 380px !important;
-    aspect-ratio: auto !important;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  #stageCanvas {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-  .mobile-camera-bar-primary {
-    display: none !important; /* Deklanşör artık kamera önizlemesinin üzerinde */
-  }
-}
-
-/* Yatay (Landscape) Modda Orijinal 16:9 Oran */
-@media (orientation: landscape) and (max-width: 1080px) {
-  .viewfinder-shell {
-    height: auto !important;
-    min-height: 0 !important;
-    aspect-ratio: 16 / 9 !important;
-  }
-  #stageCanvas {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-  .hud-shutter-overlay {
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 10px 6px;
-    gap: 10px;
-  }
-  .hud-shutter-button {
-    width: 60px;
-    height: 60px;
-  }
-  .hud-btn {
-    width: 42px;
-    height: 42px;
-  }
-}
+/* Mobil & Tablet Genel */
 
 @media (max-width: 768px) {
   .studio-header {
@@ -319,7 +266,6 @@ html, body {
   max-height: 100%;
   width: auto;
   height: auto;
-  aspect-ratio: 16 / 9;
   display: block;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
 }
@@ -1146,6 +1092,122 @@ html, body {
 
 .hidden {
   display: none !important;
+}
+
+/* ==========================================================================
+   DİKEY (PORTRAIT) vs YATAY (LANDSCAPE) ÖNİZLEME & DEKLANŞÖR KURALLARI
+   ========================================================================== */
+
+/* 1. DİKEY (PORTRAIT) MOD: Büyük, Yüksek Önizleme & ALT ORTADA Deklanşör */
+@media (orientation: portrait), (max-width: 768px) and (orientation: portrait), (max-width: 600px) {
+  .stage-column {
+    padding: 8px !important;
+    gap: 8px !important;
+  }
+
+  .viewfinder-shell {
+    width: 100% !important;
+    /* Dikey modda telefon ekranının ~62%'sini kaplayan büyük ve ferah önizleme */
+    height: clamp(400px, 62vh, 560px) !important;
+    min-height: 400px !important;
+    max-height: 68vh !important;
+    aspect-ratio: auto !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: #000000 !important;
+  }
+
+  #stageCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  .mobile-camera-bar-primary {
+    display: none !important; /* Deklanşör önizleme üzerinde olduğu için alt barı sadeleştir */
+  }
+
+  /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA */
+  .hud-shutter-overlay {
+    top: auto !important;
+    bottom: 16px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 22px !important;
+    padding: 10px 18px !important;
+    border-radius: 50px !important;
+    background: rgba(9, 10, 12, 0.52) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+    width: auto !important;
+  }
+
+  .hud-shutter-button {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  .hud-btn {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* 2. YATAY (LANDSCAPE) MOD: 16:9 Sinematik Önizleme & SAĞ ORTADA Deklanşör */
+@media (orientation: landscape) and (max-width: 1080px), (orientation: landscape) {
+  .viewfinder-shell {
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  #stageCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: contain !important;
+  }
+
+  /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ ORTADA */
+  .hud-shutter-overlay {
+    top: 50% !important;
+    bottom: auto !important;
+    right: 14px !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding: 12px 8px !important;
+    border-radius: 40px !important;
+    background: rgba(9, 10, 12, 0.52) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+    width: auto !important;
+  }
+
+  .hud-shutter-button {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .hud-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
 }
 
 @media print {
