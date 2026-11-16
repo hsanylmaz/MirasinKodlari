@@ -109,10 +109,28 @@
     btnCloseGallery: document.getElementById('btnCloseGallery'),
   };
 
+  let lastOrientationIsLandscape = null;
+
   function updateOrientationClass() {
-    const isLandscape = window.innerWidth > window.innerHeight;
+    const isLandscape =
+      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
+      window.innerWidth > window.innerHeight;
+
     document.documentElement.classList.toggle('is-landscape', isLandscape);
     document.documentElement.classList.toggle('is-portrait', !isLandscape);
+
+    // Eğer yön gerçekten dikeyden yataya veya yataydan dikeye değiştiyse
+    // canlı kamerayı yeni yöne uygun çözünürlükle güncelle
+    if (lastOrientationIsLandscape !== null && lastOrientationIsLandscape !== isLandscape) {
+      lastOrientationIsLandscape = isLandscape;
+      if (!state.isSimulation && !state.staticSubjectImg && state.webcamStream) {
+        initCameraDevices(state.currentFacingMode).catch((err) => {
+          console.warn('Yön değişimi sonrası kamera güncellenemedi:', err);
+        });
+      }
+    } else {
+      lastOrientationIsLandscape = isLandscape;
+    }
   }
 
   async function init() {
@@ -330,7 +348,9 @@
 
     const requestUserMediaWithFallback = async () => {
       // 1. Önce cihazın yönüne (dikey/yatay) uygun ideal çözünürlükle dene
-      const isPortrait = window.innerHeight > window.innerWidth;
+      const isPortrait =
+        (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ||
+        window.innerHeight > window.innerWidth;
       try {
         return await navigator.mediaDevices.getUserMedia({
           video: {
@@ -917,6 +937,9 @@
     if (els.btnToggleAspectFit) {
       els.btnToggleAspectFit.addEventListener('click', () => {
         const isContain = els.stageCanvas.classList.toggle('contain-mode');
+        window.ChromaEngine.updateConfig({
+          subjectFitMode: isContain ? 'contain' : 'cover',
+        });
         els.btnToggleAspectFit.innerHTML = isContain
           ? '<span>⛶ KADRAJ: TAM 16:9</span>'
           : '<span>⛶ KADRAJ: DOLU</span>';

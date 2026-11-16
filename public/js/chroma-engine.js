@@ -27,6 +27,7 @@ window.ChromaEngine = (function () {
     mirror: true,
     showRawGreen: false,
     showFrameOverlay: true,
+    subjectFitMode: 'cover',
     eventTitle: 'MİRASIN KODLARI',
     eventSubtitle: 'YAZILIM & TEKNOLOJİ YARIŞMASI HATIRASI',
     participantName: '',
@@ -210,12 +211,17 @@ window.ChromaEngine = (function () {
 
     const srcRatio = srcW / srcH;
     const targetRatio = targetW / targetH;
+    const isDeviceLandscape =
+      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
+      window.innerWidth > window.innerHeight;
 
-    // Eğer kaynak kamera dikey (portrait, örn: mobilde dik tutulan ön/arka kamera)
-    // ve hedef canvas yatay (16:9) ise:
-    // Standart cover dikeyde görüntüyü %68 kırparak yüze aşırı yakınlaştırır.
-    // Kişinin tüm boyunu korumak için dikeyde tam sığdırıp (fit-height) ortalıyoruz:
-    if (srcRatio < 0.95 && targetRatio >= 1) {
+    // YATAY MODDA (LANDSCAPE): Kamera görüntüsü her zaman 16:9 geniş ekranı doldurur (cover).
+    // DİKEY MODDA (PORTRAIT): Sadece kullanıcı TAM 16:9 modu (contain) seçtiğinde fit-height uygular;
+    // varsayılan DOLU modunda doğal cover uygular.
+    const shouldFitPortraitHeight =
+      !isDeviceLandscape && config.subjectFitMode === 'contain' && srcRatio < 0.95 && targetRatio >= 1;
+
+    if (shouldFitPortraitHeight) {
       const destH = targetH;
       const destW = destH * srcRatio;
       const destX = (targetW - destW) * 0.5;
