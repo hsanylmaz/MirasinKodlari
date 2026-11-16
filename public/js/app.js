@@ -108,7 +108,23 @@
     btnCloseGallery: document.getElementById('btnCloseGallery'),
   };
 
+  function updateOrientationClass() {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    document.documentElement.classList.toggle('is-landscape', isLandscape);
+    document.documentElement.classList.toggle('is-portrait', !isLandscape);
+  }
+
   async function init() {
+    updateOrientationClass();
+    window.addEventListener('resize', updateOrientationClass);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateOrientationClass, 80);
+      setTimeout(updateOrientationClass, 250);
+    });
+    if (screen && screen.orientation) {
+      screen.orientation.addEventListener('change', updateOrientationClass);
+    }
+
     bindEvents();
     if (navigator.canShare) {
       els.btnNativeSharePhoto.classList.remove('hidden');
