@@ -1236,25 +1236,36 @@ html.is-portrait .hud-btn {
   height: 42px !important;
 }
 
-/* 2. YATAY (LANDSCAPE) MOD: 16:9 Ekrana Sığan Geniş Önizleme, SAĞ ORTADA Deklanşör & Altta İşlem Bandı */
+/* 2. YATAY (LANDSCAPE) MOD: 16:9 Geniş Önizleme, Sağda Deklanşör, Altta İşlem Bandı ve Arka Plan Seçimi */
 @media (orientation: landscape) {
+  .studio-workspace {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
   .stage-column {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
     padding: 6px !important;
-    gap: 6px !important;
+    gap: 8px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   .viewfinder-shell {
     position: relative !important;
-    height: calc(100dvh - 104px) !important;
-    max-height: calc(100vh - 104px) !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    height: auto !important;
     min-height: 0 !important;
     aspect-ratio: 16 / 9 !important;
-    width: auto !important;
-    max-width: 100% !important;
     margin: 0 auto !important;
     overflow: hidden !important;
     border-radius: 8px !important;
@@ -1281,14 +1292,14 @@ html.is-portrait .hud-btn {
   .hud-shutter-overlay {
     top: 50% !important;
     bottom: auto !important;
-    right: max(14px, env(safe-area-inset-right, 14px)) !important;
+    right: max(12px, env(safe-area-inset-right, 12px)) !important;
     left: auto !important;
     transform: translateY(-50%) !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 12px !important;
-    padding: 12px 8px !important;
+    padding: 10px 8px !important;
     border-radius: 40px !important;
     background: rgba(9, 10, 12, 0.6) !important;
     backdrop-filter: blur(10px) !important;
@@ -1303,24 +1314,24 @@ html.is-portrait .hud-btn {
   }
 
   .hud-shutter-button {
-    width: 62px !important;
-    height: 62px !important;
+    width: 60px !important;
+    height: 60px !important;
   }
 
   .hud-btn {
-    width: 44px !important;
-    height: 44px !important;
+    width: 42px !important;
+    height: 42px !important;
   }
 
   /* YATAYDA CİHAZA İNDİR, KADRAJ VE FOTOĞRAF YÜKLE BANDI AKTİF */
   .mobile-camera-bar {
     display: flex !important;
-    padding: 4px 8px !important;
+    padding: 6px 10px !important;
     gap: 6px !important;
-    background: rgba(9, 10, 12, 0.85) !important;
+    background: var(--bg-surface) !important;
     border: 1px solid var(--border-tech) !important;
     border-radius: 6px !important;
-    max-width: 580px !important;
+    max-width: 640px !important;
     margin: 0 auto !important;
     width: 100% !important;
     justify-content: center !important;
@@ -1335,37 +1346,72 @@ html.is-portrait .hud-btn {
   }
 
   .mobile-camera-actions .btn {
-    padding: 6px 12px !important;
+    padding: 8px 12px !important;
     font-size: 11px !important;
-    min-height: 32px !important;
+    font-weight: 700 !important;
+    min-height: 34px !important;
     flex: 1 1 0 !important;
     justify-content: center !important;
     white-space: nowrap !important;
   }
 
+  /* YATAYDA ARKA PLAN SEÇİM KISMI AKTİF */
   .filmstrip-dock {
-    display: none !important;
+    display: flex !important;
+    min-height: 90px !important;
+    padding: 8px 12px !important;
+    gap: 6px !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-tech) !important;
+    border-radius: 6px !important;
+    max-width: 640px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  .filmstrip-list {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+  }
+
+  .bg-card {
+    width: 86px !important;
+    min-width: 86px !important;
+    height: 52px !important;
   }
 }
 
 /* JS orientation class fallback for landscape */
+html.is-landscape .studio-workspace {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
 html.is-landscape .stage-column {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
   padding: 6px !important;
-  gap: 6px !important;
+  gap: 8px !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
 }
 
 html.is-landscape .viewfinder-shell {
   position: relative !important;
-  height: calc(100dvh - 104px) !important;
-  max-height: calc(100vh - 104px) !important;
+  width: 100% !important;
+  max-width: 640px !important;
+  height: auto !important;
   min-height: 0 !important;
   aspect-ratio: 16 / 9 !important;
-  width: auto !important;
-  max-width: 100% !important;
   margin: 0 auto !important;
   overflow: hidden !important;
   border-radius: 8px !important;
@@ -1391,14 +1437,14 @@ html.is-landscape #stageCanvas.contain-mode {
 html.is-landscape .hud-shutter-overlay {
   top: 50% !important;
   bottom: auto !important;
-  right: max(14px, env(safe-area-inset-right, 14px)) !important;
+  right: max(12px, env(safe-area-inset-right, 12px)) !important;
   left: auto !important;
   transform: translateY(-50%) !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 12px !important;
-  padding: 12px 8px !important;
+  padding: 10px 8px !important;
   border-radius: 40px !important;
   background: rgba(9, 10, 12, 0.6) !important;
   backdrop-filter: blur(10px) !important;
@@ -1413,23 +1459,23 @@ html.is-landscape .hud-shutter-overlay {
 }
 
 html.is-landscape .hud-shutter-button {
-  width: 62px !important;
-  height: 62px !important;
+  width: 60px !important;
+  height: 60px !important;
 }
 
 html.is-landscape .hud-btn {
-  width: 44px !important;
-  height: 44px !important;
+  width: 42px !important;
+  height: 42px !important;
 }
 
 html.is-landscape .mobile-camera-bar {
   display: flex !important;
-  padding: 4px 8px !important;
+  padding: 6px 10px !important;
   gap: 6px !important;
-  background: rgba(9, 10, 12, 0.85) !important;
+  background: var(--bg-surface) !important;
   border: 1px solid var(--border-tech) !important;
   border-radius: 6px !important;
-  max-width: 580px !important;
+  max-width: 640px !important;
   margin: 0 auto !important;
   width: 100% !important;
   justify-content: center !important;
@@ -1444,16 +1490,39 @@ html.is-landscape .mobile-camera-actions {
 }
 
 html.is-landscape .mobile-camera-actions .btn {
-  padding: 6px 12px !important;
+  padding: 8px 12px !important;
   font-size: 11px !important;
-  min-height: 32px !important;
+  font-weight: 700 !important;
+  min-height: 34px !important;
   flex: 1 1 0 !important;
   justify-content: center !important;
   white-space: nowrap !important;
 }
 
 html.is-landscape .filmstrip-dock {
-  display: none !important;
+  display: flex !important;
+  min-height: 90px !important;
+  padding: 8px 12px !important;
+  gap: 6px !important;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-tech) !important;
+  border-radius: 6px !important;
+  max-width: 640px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+}
+
+html.is-landscape .filmstrip-list {
+  display: flex !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  padding-bottom: 4px !important;
+}
+
+html.is-landscape .bg-card {
+  width: 86px !important;
+  min-width: 86px !important;
+  height: 52px !important;
 }
 
 @media print {
