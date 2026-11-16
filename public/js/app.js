@@ -32,6 +32,9 @@
     countdownOverlay: document.getElementById('countdownOverlay'),
     countdownNumber: document.getElementById('countdownNumber'),
     shutterFlash: document.getElementById('shutterFlash'),
+    cameraPromptOverlay: document.getElementById('cameraPromptOverlay'),
+    btnRequestCameraAccess: document.getElementById('btnRequestCameraAccess'),
+    btnRestartCamera: document.getElementById('btnRestartCamera'),
     backgroundsList: document.getElementById('backgroundsList'),
     btnRefreshBgs: document.getElementById('btnRefreshBgs'),
 
@@ -39,6 +42,7 @@
     mobileRearCameraInput: document.getElementById('mobileRearCameraInput'),
     mobileSelfieCameraInput: document.getElementById('mobileSelfieCameraInput'),
     mobileGalleryInput: document.getElementById('mobileGalleryInput'),
+    btnCapturePhotoMobile: document.getElementById('btnCapturePhotoMobile'),
     btnFlipLiveCamera: document.getElementById('btnFlipLiveCamera'),
     btnMobileRearCam: document.getElementById('btnMobileRearCam'),
     btnMobileGallery: document.getElementById('btnMobileGallery'),
@@ -292,24 +296,53 @@
     }
   }
 
-  async function initCameraDevices(preferredFacingMode) {
+  async function initCameraDevices(preferredFacingMode, isUserTriggered = false) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      enableSimulationMode('TELEFON KAMERA MODU AKTİF');
+      enableSimulationMode('KAMERA DESTEKLENMİYOR — DEMO MOD');
       return;
     }
 
     const facingMode = preferredFacingMode || state.currentFacingMode || 'user';
     state.currentFacingMode = facingMode;
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
+    const requestUserMediaWithFallback = async () => {
+      // 1. Önce ideal 1080p ve belirtilen yön ile dene
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+          audio: false,
+        });
+      } catch (err1) {
+        console.warn('1080p kamera açılamadı, esnek çözünürlük deneniyor:', err1);
+      }
+
+      // 2. Çözünürlük kısıtı olmadan sadece yön ile dene
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+          audio: false,
+        });
+      } catch (err2) {
+        console.warn('Yön kısıtlı kamera açılamadı, herhangi bir kamera deneniyor:', err2);
+      }
+
+      // 3. En yalın video kısıtı ile dene
+      return await navigator.mediaDevices.getUserMedia({
+        video: true,
         audio: false,
       });
+    };
+
+    try {
+      const stream = await requestUserMediaWithFallback();
+
+      if (els.cameraPromptOverlay) {
+        els.cameraPromptOverlay.classList.add('hidden');
+      }
 
       const isSelfie = facingMode === 'user';
       els.chkMirror.checked = isSelfie;
@@ -333,8 +366,14 @@
       simOpt.textContent = 'Demo Yeşil Perde Simülasyonu (Kamerasız Test)';
       els.selectCamera.appendChild(simOpt);
     } catch (err) {
-      console.warn('Canlı kamera yerine Telefon Kamera / Demo modu aktif:', err);
-      enableSimulationMode('TELEFON KAMERA / DEMO MOD');
+      console.warn('Kamera açılamadı / izin bekleniyor:', err);
+
+      // Tarayıcı otomatik başlatmada izin vermediyse veya engellendiyse ekranda buton çıkar
+      if (els.cameraPromptOverlay) {
+        els.cameraPromptOverlay.classList.remove('hidden');
+      }
+
+      enableSimulationMode('KAMERA İZNİ BEKLENİYOR');
     }
   }
 
@@ -425,6 +464,9 @@
     window.ChromaEngine.updateConfig({
       showRawGreen: state.isEyedropperMode ? true : els.chkShowRawGreen.checked,
     });
+    if (state.isEyedropperMode && els.viewfinderShell) {
+      els.viewfinderShell.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   function triggerBrowserDirectDownload(dataUrl, fileName) {
@@ -460,12 +502,14 @@
     }
   }
 
-  async function executeCaptureAndSave({ skipCountdown, autoDownloadToDevice }) {
+  async function executeCaptureAndSave({ skipCountdown = true, autoDownloadToDevice = false } = {}) {
     if (state.isCountingDown) return;
     state.isCountingDown = true;
-    els.btnCapturePhoto.disabled = true;
+    if (els.btnCapturePhoto) els.btnCapturePhoto.disabled = true;
+    if (els.btnCapturePhotoMobile) els.btnCapturePhotoMobile.disabled = true;
 
-    const seconds = skipCountdown ? 0 : parseInt(els.selectTimer.value, 10) || 0;
+    // Sayaç kaldırıldı: Doğrudan anında çekim yapılır
+    const seconds = (!skipCountdown && els.selectTimer) ? (parseInt(els.selectTimer.value, 10) || 0) : 0;
     if (seconds > 0) {
       els.countdownOverlay.classList.remove('hidden');
       for (let remaining = seconds; remaining >= 1; remaining--) {
@@ -568,7 +612,8 @@
       }
     } finally {
       state.isCountingDown = false;
-      els.btnCapturePhoto.disabled = false;
+      if (els.btnCapturePhoto) els.btnCapturePhoto.disabled = false;
+      if (els.btnCapturePhotoMobile) els.btnCapturePhotoMobile.disabled = false;
     }
   }
 
@@ -671,8 +716,12 @@
     });
 
     // Telefon Kamerası & Galeri Girişleri
-    els.btnMobileRearCam.addEventListener('click', () => els.mobileRearCameraInput.click());
-    els.btnMobileGallery.addEventListener('click', () => els.mobileGalleryInput.click());
+    if (els.btnMobileRearCam && els.mobileRearCameraInput) {
+      els.btnMobileRearCam.addEventListener('click', () => els.mobileRearCameraInput.click());
+    }
+    if (els.btnMobileGallery && els.mobileGalleryInput) {
+      els.btnMobileGallery.addEventListener('click', () => els.mobileGalleryInput.click());
+    }
 
     [els.mobileRearCameraInput, els.mobileSelfieCameraInput, els.mobileGalleryInput].forEach((input) => {
       if (!input) return;
@@ -815,10 +864,18 @@
       }
     });
 
-    // Sayaçlı Fotoğraf Çekimi ve Modallar
-    els.btnCapturePhoto.addEventListener('click', () => {
-      executeCaptureAndSave({ skipCountdown: false, autoDownloadToDevice: false });
-    });
+    // Fotoğraf Çekimi ve Modallar
+    if (els.btnCapturePhotoMobile) {
+      els.btnCapturePhotoMobile.addEventListener('click', () => {
+        executeCaptureAndSave({ skipCountdown: true, autoDownloadToDevice: false });
+      });
+    }
+
+    if (els.btnCapturePhoto) {
+      els.btnCapturePhoto.addEventListener('click', () => {
+        executeCaptureAndSave({ skipCountdown: true, autoDownloadToDevice: false });
+      });
+    }
 
     els.btnNewCapture.addEventListener('click', () => {
       els.captureResultModal.classList.add('hidden');
@@ -875,7 +932,7 @@
           els.galleryModal.classList.contains('hidden') &&
           els.wifiStandModal.classList.contains('hidden')
         ) {
-          executeCaptureAndSave({ skipCountdown: false, autoDownloadToDevice: false });
+          executeCaptureAndSave({ skipCountdown: true, autoDownloadToDevice: false });
         }
       }
     });

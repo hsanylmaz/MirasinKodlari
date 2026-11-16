@@ -21,7 +21,7 @@
     </div>
 
     <div class="header-actions">
-      <button type="button" class="btn btn-emerald" id="btnOpenWifiStand" title="Öğrencilerin telefonlarıyla stüdyoya girmesi için QR panosunu açar">
+      <button type="button" class="btn btn-emerald hide-on-mobile" id="btnOpenWifiStand" title="Öğrencilerin telefonlarıyla stüdyoya girmesi için QR panosunu açar">
         📱 STÜDYO GİRİŞ QR KODU
       </button>
       <button type="button" class="btn" id="btnOpenGallery">
@@ -53,6 +53,20 @@
           <div class="hud-tag amber" id="resolutionTag">1080P FULL HD • CHROMA KEY AKTİF</div>
         </div>
 
+        <!-- Kamera İzin / Başlatma İstemi (Tarayıcı İzinleri İçin) -->
+        <div class="camera-prompt-overlay hidden" id="cameraPromptOverlay">
+          <div class="camera-prompt-card">
+            <div style="font-size:36px; margin-bottom:8px;">📷</div>
+            <h2 style="font-size:18px; margin:0 0 8px; color:#F59E0B;">CANLI KAMERA İZNİ GEREKLİ</h2>
+            <p style="font-size:13px; color:#D1D5DB; margin:0 0 16px; line-height:1.5;">
+              Stüdyoyu canlı kameranızla kullanmak için lütfen aşağıdaki butona tıklayarak tarayıcınızdan kamera izni verin.
+            </p>
+            <button type="button" class="btn btn-amber" id="btnRequestCameraAccess" style="padding:12px 24px; font-weight:800; font-size:14px; width:100%;">
+              🎥 KAMERAYI BAŞLAT / İZİN VER
+            </button>
+          </div>
+        </div>
+
         <!-- Ekrandan Yeşil Renk Seçme (Damlalık) Aktif Banner -->
         <div class="eyedropper-banner hidden" id="eyedropperBanner">
           YEŞİL PERDE ÜZERİNDEKİ BİR NOKTAYA DOKUNUN / TIKLAYIN (İPTAL: ESC)
@@ -70,31 +84,36 @@
 
       <!-- Telefon / Mobil Kamera ile Çekim & Doğrudan Telefona İndirme Çubuğu -->
       <div class="mobile-camera-bar">
-        <div class="mobile-camera-bar-left">
-          <!-- Telefon Arka Kamera Input -->
-          <input type="file" id="mobileRearCameraInput" accept="image/*" capture="environment" class="hidden" />
-          <!-- Telefon Ön (Selfie) Kamera Input -->
-          <input type="file" id="mobileSelfieCameraInput" accept="image/*" capture="user" class="hidden" />
-          <!-- Galeriden Fotoğraf Seçme Input -->
-          <input type="file" id="mobileGalleryInput" accept="image/*" class="hidden" />
+        <!-- Telefon Arka Kamera Input -->
+        <input type="file" id="mobileRearCameraInput" accept="image/*" capture="environment" class="hidden" />
+        <!-- Telefon Ön (Selfie) Kamera Input -->
+        <input type="file" id="mobileSelfieCameraInput" accept="image/*" capture="user" class="hidden" />
+        <!-- Galeriden Fotoğraf Seçme Input -->
+        <input type="file" id="mobileGalleryInput" accept="image/*" class="hidden" />
 
-          <button type="button" class="btn btn-amber" id="btnFlipLiveCamera" title="Canlı kamerayı Ön (Selfie) ve Arka kamera arasında değiştir">
-            🔄 KAMERA ÇEVİR (ÖN/ARKA)
+        <div class="mobile-camera-bar-primary">
+          <button type="button" class="btn btn-shutter-mobile" id="btnCapturePhotoMobile" title="Fotoğraf çek ve sonucu gör">
+            <span>📸 FOTOĞRAF ÇEK</span>
           </button>
-          <button type="button" class="btn" id="btnMobileRearCam" title="Telefonun kendi fotoğraf kamerasıyla çek">
-            📸 FOTOĞRAF KAMERASI
+          <button type="button" class="btn btn-emerald" id="btnQuickDownloadToDevice" title="Oluşan fotoğrafı doğrudan bu telefona/cihaza indirir">
+            <span>⬇ CİHAZA İNDİR</span>
+          </button>
+        </div>
+
+        <div class="mobile-camera-bar-secondary">
+          <button type="button" class="btn btn-amber" id="btnFlipLiveCamera" title="Canlı kamerayı Ön (Selfie) ve Arka kamera arasında değiştir">
+            🔄 KAMERA ÇEVİR
           </button>
           <button type="button" class="btn" id="btnMobileGallery" title="Telefondaki veya bilgisayardaki bir yeşil perde fotoğrafını yükle">
-            🖼 GALERİDEN SEÇ
+            🖼 FOTOĞRAF YÜKLE
+          </button>
+          <button type="button" class="btn hidden" id="btnMobileRearCam" title="Cihaz kamerası ile çek">
+            📷 KAMERA
           </button>
           <button type="button" class="btn hidden" id="btnBackToLiveVideo" style="border-color:#EF4444; color:#FCA5A5;">
             🎥 CANLI KAMERAYA DÖN
           </button>
         </div>
-
-        <button type="button" class="btn btn-emerald" id="btnQuickDownloadToDevice" title="Oluşan fotoğrafı doğrudan bu telefona/cihaza indirir">
-          ⬇ TELEFONUMA / CİHAZIMA İNDİR
-        </button>
       </div>
 
       <!-- Alt Arka Plan Seçici Film Şeridi -->
@@ -223,26 +242,22 @@
         </div>
       </div>
 
-      <!-- 3. Kamera & Çekim Ayarları -->
+      <!-- 4. Kamera & Çekim Ayarları -->
       <div class="rack-section">
         <div class="rack-heading">
-          <span>4. KAMERA &amp; SAYAÇ</span>
+          <span>4. KAMERA</span>
         </div>
 
         <div class="field-group">
           <label class="field-label" for="selectCamera">Canlı Kamera Kaynağı</label>
-          <select id="selectCamera" class="studio-select">
-            <option value="simulation">Demo Yeşil Perde Simülasyonu</option>
-          </select>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="selectTimer">Geri Sayım Süresi</label>
-          <select id="selectTimer" class="studio-select">
-            <option value="3" selected>3 Saniye Geri Sayım</option>
-            <option value="5">5 Saniye Geri Sayım</option>
-            <option value="0">Anında Çekim (Sayaçsız)</option>
-          </select>
+          <div style="display:flex; gap:6px;">
+            <select id="selectCamera" class="studio-select" style="flex:1;">
+              <option value="simulation">Demo Yeşil Perde Simülasyonu</option>
+            </select>
+            <button type="button" class="btn btn-amber" id="btnRestartCamera" title="Kamerayı yeniden başlat ve izinleri tara">
+              ↻
+            </button>
+          </div>
         </div>
 
         <div class="toggle-row">
@@ -254,7 +269,7 @@
       <!-- Deklanşör & Doğrudan İndirme Butonları -->
       <div class="shutter-dock">
         <button type="button" class="btn-shutter" id="btnCapturePhoto">
-          <span>📸 FOTOĞRAF ÇEK (SAYAÇLI)</span>
+          <span>📸 FOTOĞRAF ÇEK</span>
         </button>
         <button type="button" class="btn-direct-save" id="btnDirectSaveSidebar">
           <span>⬇ DOĞRUDAN TELEFONUMA / CİHAZA İNDİR</span>

@@ -113,9 +113,12 @@ html, body {
   }
   .stage-column {
     height: auto !important;
+    overflow: visible !important;
   }
   .viewfinder-shell {
-    min-height: 240px !important;
+    min-height: auto !important;
+    aspect-ratio: 16 / 9;
+    width: 100%;
   }
   .control-rack {
     border-left: none !important;
@@ -124,6 +127,112 @@ html, body {
   }
   .hide-on-mobile {
     display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .studio-header {
+    min-height: 48px;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  .brand-title {
+    font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .tally-indicator {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  .stage-column {
+    padding: 8px;
+    gap: 8px;
+  }
+  .viewfinder-shell {
+    border-width: 1px;
+  }
+  .hud-overlay-top {
+    top: 6px;
+    left: 8px;
+    right: 8px;
+  }
+  .hud-tag {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  .hud-tag.amber {
+    display: none;
+  }
+  .mobile-camera-bar {
+    padding: 8px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mobile-camera-bar-primary {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+  .btn-shutter-mobile {
+    padding: 13px 8px;
+    font-size: 14px;
+  }
+  .mobile-camera-bar #btnQuickDownloadToDevice {
+    padding: 13px 8px;
+    font-size: 13px;
+  }
+  .mobile-camera-bar-secondary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 6px;
+    width: 100%;
+  }
+  .mobile-camera-bar-secondary .btn {
+    padding: 10px 6px;
+    font-size: 11px;
+    width: 100%;
+    justify-content: center;
+  }
+  .filmstrip-dock {
+    min-height: 110px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .filmstrip-title {
+    font-size: 11px;
+  }
+  .filmstrip-list {
+    gap: 8px;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bg-thumb-card {
+    flex: 0 0 120px;
+    height: 68px;
+  }
+  .bg-thumb-caption {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+  .rack-section {
+    padding: 12px;
+  }
+  .studio-input,
+  .studio-select {
+    font-size: 16px; /* iOS Safari otomatik zoom yapmasını engeller */
+    min-height: 44px;
+    padding: 10px;
+  }
+  .studio-range {
+    min-height: 40px;
+    padding: 8px 0;
+    touch-action: pan-x;
+  }
+  .color-swatch-input {
+    width: 44px;
+    height: 44px;
   }
 }
 
@@ -173,15 +282,52 @@ html, body {
   gap: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border-strong);
-  padding: 10px 12px;
+  padding: 8px 12px;
   flex-wrap: wrap;
 }
 
-.mobile-camera-bar-left {
+.mobile-camera-bar-primary {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+.mobile-camera-bar-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-shutter-mobile {
+  background: var(--accent-amber);
+  color: #090A0C;
+  border: 2px solid #FBBF24;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  letter-spacing: 0.03em;
+  transition: transform 0.08s ease, background 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn-shutter-mobile:hover {
+  background: var(--accent-amber-hover);
+}
+
+.btn-shutter-mobile:active {
+  transform: translateY(1px);
+}
+
+.btn-shutter-mobile:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Vizör Üst Telemetri Katmanı */
@@ -273,6 +419,29 @@ html, body {
 
 .shutter-flash.active {
   opacity: 0.92;
+}
+
+/* Kamera İzin / Başlatma İstemi */
+.camera-prompt-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 10, 12, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 25;
+}
+
+.camera-prompt-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--accent-amber);
+  max-width: 400px;
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
 /* Alt Arka Plan Film Şeridi (Filmstrip Dock) */
@@ -613,9 +782,40 @@ html, body {
 }
 
 @media (max-width: 860px) {
+  .modal-backdrop {
+    padding: 8px;
+  }
   .modal-card {
     grid-template-columns: 1fr;
     overflow-y: auto;
+    max-height: 95dvh;
+  }
+  .modal-preview-pane {
+    padding: 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-tech);
+  }
+  .modal-qr-pane {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+  .qr-frame {
+    width: 170px;
+    height: 170px;
+    padding: 8px;
+  }
+  .stand-modal-card {
+    padding: 14px;
+    gap: 14px;
+    max-height: 95dvh;
+  }
+  .gallery-modal-card {
+    padding: 12px;
+    max-height: 95dvh;
+  }
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    gap: 8px;
   }
 }
 
