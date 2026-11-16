@@ -38,6 +38,12 @@
     backgroundsList: document.getElementById('backgroundsList'),
     btnRefreshBgs: document.getElementById('btnRefreshBgs'),
 
+    // Kamera Önizlemesi Üzerindeki Kayan Deklanşör (HUD) Butonları
+    hudShutterOverlay: document.getElementById('hudShutterOverlay'),
+    btnHudCapturePhoto: document.getElementById('btnHudCapturePhoto'),
+    btnHudFlipCamera: document.getElementById('btnHudFlipCamera'),
+    btnHudQuickDownload: document.getElementById('btnHudQuickDownload'),
+
     // Mobil / Telefon Kamera Elemanları
     mobileRearCameraInput: document.getElementById('mobileRearCameraInput'),
     mobileSelfieCameraInput: document.getElementById('mobileSelfieCameraInput'),
@@ -507,6 +513,8 @@
     state.isCountingDown = true;
     if (els.btnCapturePhoto) els.btnCapturePhoto.disabled = true;
     if (els.btnCapturePhotoMobile) els.btnCapturePhotoMobile.disabled = true;
+    if (els.btnHudCapturePhoto) els.btnHudCapturePhoto.disabled = true;
+    if (els.btnHudQuickDownload) els.btnHudQuickDownload.disabled = true;
 
     // Sayaç kaldırıldı: Doğrudan anında çekim yapılır
     const seconds = (!skipCountdown && els.selectTimer) ? (parseInt(els.selectTimer.value, 10) || 0) : 0;
@@ -614,6 +622,8 @@
       state.isCountingDown = false;
       if (els.btnCapturePhoto) els.btnCapturePhoto.disabled = false;
       if (els.btnCapturePhotoMobile) els.btnCapturePhotoMobile.disabled = false;
+      if (els.btnHudCapturePhoto) els.btnHudCapturePhoto.disabled = false;
+      if (els.btnHudQuickDownload) els.btnHudQuickDownload.disabled = false;
     }
   }
 
@@ -863,6 +873,26 @@
         await loadNetworkInfo(state.selectedBaseUrl);
       }
     });
+
+    // Kamera Önizlemesi Üzerindeki Kayan Deklanşör (HUD) Butonları
+    if (els.btnHudCapturePhoto) {
+      els.btnHudCapturePhoto.addEventListener('click', () => {
+        executeCaptureAndSave({ skipCountdown: true, autoDownloadToDevice: false });
+      });
+    }
+
+    if (els.btnHudQuickDownload) {
+      els.btnHudQuickDownload.addEventListener('click', () => {
+        executeCaptureAndSave({ skipCountdown: true, autoDownloadToDevice: true });
+      });
+    }
+
+    if (els.btnHudFlipCamera) {
+      els.btnHudFlipCamera.addEventListener('click', async () => {
+        const nextFacing = state.currentFacingMode === 'user' ? 'environment' : 'user';
+        await initCameraDevices(nextFacing);
+      });
+    }
 
     // Fotoğraf Çekimi ve Modallar
     if (els.btnCapturePhotoMobile) {

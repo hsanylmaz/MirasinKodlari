@@ -80,6 +80,26 @@
 
         <!-- Deklanşör Flaş Katmanı -->
         <div class="shutter-flash" id="shutterFlash"></div>
+
+        <!-- Kamera Önizlemesi Üzerinde Kayan Deklanşör Çubuğu (Native Kamera Modu) -->
+        <div class="hud-shutter-overlay" id="hudShutterOverlay">
+          <button type="button" class="hud-btn hud-btn-flip" id="btnHudFlipCamera" title="Kamera Çevir (Ön / Arka)">
+            <span class="hud-btn-icon">🔄</span>
+            <span class="hud-btn-text">Çevir</span>
+          </button>
+
+          <button type="button" class="hud-shutter-button" id="btnHudCapturePhoto" title="Fotoğraf Çek">
+            <span class="hud-shutter-ring"></span>
+            <span class="hud-shutter-inner">
+              <span class="hud-shutter-icon">📸</span>
+            </span>
+          </button>
+
+          <button type="button" class="hud-btn hud-btn-download" id="btnHudQuickDownload" title="Fotoğrafı Çek ve Telefona İndir">
+            <span class="hud-btn-icon">⬇</span>
+            <span class="hud-btn-text">İndir</span>
+          </button>
+        </div>
       </div>
 
       <!-- Telefon / Mobil Kamera ile Çekim & Doğrudan Telefona İndirme Çubuğu -->
