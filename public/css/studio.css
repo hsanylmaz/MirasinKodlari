@@ -1090,7 +1090,7 @@ html, body {
    DİKEY (PORTRAIT) vs YATAY (LANDSCAPE) ÖNİZLEME & DEKLANŞÖR KURALLARI
    ========================================================================== */
 
-/* 1. DİKEY (PORTRAIT) MOD: Büyük, Yüksek Önizleme (%50 Daha Büyük) & ALT ORTADA Deklanşör */
+/* 1. DİKEY (PORTRAIT) MOD: Sabit 16:9 Oranında Önizleme & Altta Deklanşör */
 @media (orientation: portrait), (max-aspect-ratio: 1/1) {
   .stage-column {
     padding: 6px !important;
@@ -1100,24 +1100,26 @@ html, body {
   .viewfinder-shell {
     position: relative !important;
     width: 100% !important;
-    /* Dikey modda önizleme ekranını %50 daha büyük yap: clamp ile 76vh ve min 520px */
-    height: clamp(520px, 76vh, 850px) !important;
-    min-height: 520px !important;
-    max-height: 86vh !important;
-    aspect-ratio: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    /* Dikey modda 16:9 oranı sabit tutulur */
+    aspect-ratio: 16 / 9 !important;
     border-radius: 8px !important;
     overflow: hidden !important;
     background: #000000 !important;
+    margin: 0 auto !important;
   }
 
   #stageCanvas {
-    position: absolute !important;
-    inset: 0 !important;
+    position: relative !important;
+    inset: auto !important;
     width: 100% !important;
     height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    aspect-ratio: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: 16 / 9 !important;
     object-fit: cover !important;
     object-position: center !important;
     display: block !important;
@@ -1127,18 +1129,18 @@ html, body {
     object-fit: contain !important;
   }
 
-  /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA */
+  /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA (16:9 İÇİNDE) */
   .hud-shutter-overlay {
     top: auto !important;
-    bottom: 20px !important;
+    bottom: 10px !important;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 24px !important;
-    padding: 12px 20px !important;
+    gap: 16px !important;
+    padding: 8px 16px !important;
     border-radius: 50px !important;
     background: rgba(9, 10, 12, 0.6) !important;
     backdrop-filter: blur(10px) !important;
@@ -1153,13 +1155,13 @@ html, body {
   }
 
   .hud-shutter-button {
-    width: 76px !important;
-    height: 76px !important;
+    width: 58px !important;
+    height: 58px !important;
   }
 
   .hud-btn {
-    width: 50px !important;
-    height: 50px !important;
+    width: 42px !important;
+    height: 42px !important;
   }
 }
 
@@ -1172,23 +1174,25 @@ html.is-portrait .stage-column {
 html.is-portrait .viewfinder-shell {
   position: relative !important;
   width: 100% !important;
-  height: clamp(520px, 76vh, 850px) !important;
-  min-height: 520px !important;
-  max-height: 86vh !important;
-  aspect-ratio: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 16 / 9 !important;
   border-radius: 8px !important;
   overflow: hidden !important;
   background: #000000 !important;
+  margin: 0 auto !important;
 }
 
 html.is-portrait #stageCanvas {
-  position: absolute !important;
-  inset: 0 !important;
+  position: relative !important;
+  inset: auto !important;
   width: 100% !important;
   height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 16 / 9 !important;
   object-fit: cover !important;
   object-position: center !important;
   display: block !important;
@@ -1200,15 +1204,15 @@ html.is-portrait #stageCanvas.contain-mode {
 
 html.is-portrait .hud-shutter-overlay {
   top: auto !important;
-  bottom: 20px !important;
+  bottom: 10px !important;
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 24px !important;
-  padding: 12px 20px !important;
+  gap: 16px !important;
+  padding: 8px 16px !important;
   border-radius: 50px !important;
   background: rgba(9, 10, 12, 0.6) !important;
   backdrop-filter: blur(10px) !important;
@@ -1223,13 +1227,13 @@ html.is-portrait .hud-shutter-overlay {
 }
 
 html.is-portrait .hud-shutter-button {
-  width: 76px !important;
-  height: 76px !important;
+  width: 58px !important;
+  height: 58px !important;
 }
 
 html.is-portrait .hud-btn {
-  width: 50px !important;
-  height: 50px !important;
+  width: 42px !important;
+  height: 42px !important;
 }
 
 /* 2. YATAY (LANDSCAPE) MOD: 16:9 Ekrana Sığan Geniş Önizleme, SAĞ ORTADA Deklanşör & Altta İşlem Bandı */
