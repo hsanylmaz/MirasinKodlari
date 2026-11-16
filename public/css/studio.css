@@ -1099,18 +1099,19 @@ html, body {
    ========================================================================== */
 
 /* 1. DİKEY (PORTRAIT) MOD: Büyük, Yüksek Önizleme & ALT ORTADA Deklanşör */
-@media (orientation: portrait), (max-width: 768px) and (orientation: portrait), (max-width: 600px) {
+@media (orientation: portrait), (max-aspect-ratio: 1/1), (max-width: 680px) and (orientation: portrait), (max-width: 500px) {
   .stage-column {
-    padding: 8px !important;
+    padding: 6px !important;
     gap: 8px !important;
   }
 
   .viewfinder-shell {
+    position: relative !important;
     width: 100% !important;
-    /* Dikey modda telefon ekranının ~62%'sini kaplayan büyük ve ferah önizleme */
-    height: clamp(400px, 62vh, 560px) !important;
-    min-height: 400px !important;
-    max-height: 68vh !important;
+    /* Dikey modda telefon ekranının ~74%'ünü kaplayan dev, ferah kamera ekranı */
+    height: clamp(500px, 74vh, 720px) !important;
+    min-height: 500px !important;
+    max-height: 82vh !important;
     aspect-ratio: auto !important;
     border-radius: 8px !important;
     overflow: hidden !important;
@@ -1118,6 +1119,8 @@ html, body {
   }
 
   #stageCanvas {
+    position: absolute !important;
+    inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
@@ -1125,6 +1128,7 @@ html, body {
     aspect-ratio: auto !important;
     object-fit: cover !important;
     object-position: center !important;
+    display: block !important;
   }
 
   .mobile-camera-bar-primary {
@@ -1134,32 +1138,32 @@ html, body {
   /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA */
   .hud-shutter-overlay {
     top: auto !important;
-    bottom: 16px !important;
+    bottom: 20px !important;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 22px !important;
-    padding: 10px 18px !important;
+    gap: 24px !important;
+    padding: 12px 20px !important;
     border-radius: 50px !important;
-    background: rgba(9, 10, 12, 0.52) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+    background: rgba(9, 10, 12, 0.55) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75) !important;
     width: auto !important;
   }
 
   .hud-shutter-button {
-    width: 72px !important;
-    height: 72px !important;
+    width: 76px !important;
+    height: 76px !important;
   }
 
   .hud-btn {
-    width: 48px !important;
-    height: 48px !important;
+    width: 50px !important;
+    height: 50px !important;
   }
 }
 
