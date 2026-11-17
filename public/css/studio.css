@@ -377,62 +377,61 @@ html, body {
   color: #FFFFFF;
 }
 
-/* Sağ Üst Köşe: Kadraj / Oran Seçici HUD Butonu (16:9, 4:3, 1:1, 9:16) */
+/* Alt Kayan Deklanşör Çubuğu İçinde Kadraj / Oran Seçici (16:9, 4:3, 1:1, 9:16) */
 .hud-ratio-cluster {
-  position: absolute;
-  top: max(12px, env(safe-area-inset-top, 12px));
-  right: max(14px, env(safe-area-inset-right, 14px));
-  z-index: 52;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.hud-ratio-btn {
-  background: rgba(9, 10, 12, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #F3F4F6;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  cursor: pointer;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
-  transition: all 0.15s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  justify-content: center;
 }
 
-.hud-ratio-btn:hover {
-  background: rgba(245, 158, 11, 0.35);
+.hud-btn-ratio {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.hud-btn-ratio:hover {
+  background: rgba(245, 158, 11, 0.32);
   border-color: var(--accent-amber);
-  color: #FFFFFF;
 }
 
-.hud-ratio-text {
+.hud-btn-ratio .hud-btn-text {
   color: var(--accent-amber);
   font-weight: 800;
 }
 
 .hud-ratio-menu {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: row;
-  gap: 4px;
-  background: rgba(9, 10, 12, 0.88);
+  gap: 5px;
+  background: rgba(9, 10, 12, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.5);
-  padding: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  padding: 5px;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
-  animation: fadeInMenu 0.15s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+  z-index: 60;
+  animation: fadeInMenuUp 0.15s ease;
+  white-space: nowrap;
+}
+
+.hud-ratio-menu.hidden {
+  display: none !important;
+}
+
+html.is-landscape .hud-ratio-menu {
+  bottom: auto;
+  top: 50%;
+  left: auto;
+  right: calc(100% + 14px);
+  transform: translateY(-50%);
+  flex-direction: column;
+  animation: fadeInMenuLeft 0.15s ease;
 }
 
 .ratio-option-btn {
@@ -450,7 +449,7 @@ html, body {
 }
 
 .ratio-option-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
 }
 
@@ -461,9 +460,26 @@ html, body {
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
-@keyframes fadeInMenu {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInMenuUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes fadeInMenuLeft {
+  from {
+    opacity: 0;
+    transform: translate(6px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
 }
 
 /* Mobil & Tablet Genel */
@@ -672,7 +688,6 @@ html, body {
   top: 10px;
   left: 12px;
   right: 12px;
-  padding-right: 90px;
   display: flex;
   justify-content: space-between;
   align-items: center;
