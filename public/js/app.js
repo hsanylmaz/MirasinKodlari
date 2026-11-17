@@ -19,9 +19,16 @@
     isSimulation: true,
     isEyedropperMode: false,
     isCountingDown: false,
+    currentStage: 'setup',
   };
 
   const els = {
+    setupStage: document.getElementById('setupStage'),
+    shootStage: document.getElementById('shootStage'),
+    btnGoToShootStage: document.getElementById('btnGoToShootStage'),
+    btnBackToSetupStage: document.getElementById('btnBackToSetupStage'),
+    btnHeaderSetup: document.getElementById('btnHeaderSetup'),
+
     webcamVideo: document.getElementById('webcamVideo'),
     stageCanvas: document.getElementById('stageCanvas'),
     viewfinderShell: document.getElementById('viewfinderShell'),
@@ -119,6 +126,17 @@
     document.documentElement.classList.toggle('is-landscape', isLandscape);
     document.documentElement.classList.toggle('is-portrait', !isLandscape);
 
+    // Canvas çözünürlüğünü yöne göre ayarla:
+    // Dikeyde: 720 genişlik x 1280 yükseklik (9:16 dikey oran)
+    // Yatayda: 1280 genişlik x 720 yükseklik (16:9 yatay oran)
+    const targetW = isLandscape ? 1280 : 720;
+    const targetH = isLandscape ? 720 : 1280;
+
+    if (els.stageCanvas && (els.stageCanvas.width !== targetW || els.stageCanvas.height !== targetH)) {
+      els.stageCanvas.width = targetW;
+      els.stageCanvas.height = targetH;
+    }
+
     // Eğer yön gerçekten dikeyden yataya veya yataydan dikeye değiştiyse
     // canlı kamerayı yeni yöne uygun çözünürlükle güncelle
     if (lastOrientationIsLandscape !== null && lastOrientationIsLandscape !== isLandscape) {
@@ -130,6 +148,22 @@
       }
     } else {
       lastOrientationIsLandscape = isLandscape;
+    }
+  }
+
+  function setStage(stageName) {
+    state.currentStage = stageName;
+    if (stageName === 'shoot') {
+      if (els.setupStage) els.setupStage.classList.add('hidden');
+      if (els.shootStage) els.shootStage.classList.remove('hidden');
+      if (els.btnHeaderSetup) els.btnHeaderSetup.classList.remove('hidden');
+      updateOrientationClass();
+      window.scrollTo(0, 0);
+    } else {
+      if (els.shootStage) els.shootStage.classList.add('hidden');
+      if (els.setupStage) els.setupStage.classList.remove('hidden');
+      if (els.btnHeaderSetup) els.btnHeaderSetup.classList.add('hidden');
+      window.scrollTo(0, 0);
     }
   }
 
@@ -583,11 +617,13 @@
 
     try {
       const bgImg = state.selectedBg ? state.bgImageCache.get(state.selectedBg.url) : null;
+      const isPortrait = els.stageCanvas ? els.stageCanvas.height > els.stageCanvas.width : false;
       const imageDataUrl = window.ChromaEngine.renderHighResCapture({
         videoElement: els.webcamVideo,
         staticSubjectImg: state.staticSubjectImg,
         backgroundImg: bgImg,
         isSimulation: state.isSimulation,
+        isPortrait,
       });
 
       const cleanName = (els.inputParticipantName.value || els.inputTeamName.value || 'Hatira')
@@ -970,8 +1006,20 @@
       });
     }
 
+    // 2 Aşamalı Stüdyo Geçiş Butonları
+    if (els.btnGoToShootStage) {
+      els.btnGoToShootStage.addEventListener('click', () => setStage('shoot'));
+    }
+    if (els.btnBackToSetupStage) {
+      els.btnBackToSetupStage.addEventListener('click', () => setStage('setup'));
+    }
+    if (els.btnHeaderSetup) {
+      els.btnHeaderSetup.addEventListener('click', () => setStage('setup'));
+    }
+
     els.btnNewCapture.addEventListener('click', () => {
       els.captureResultModal.classList.add('hidden');
+      setStage('setup');
     });
 
     els.btnPrintPhoto.addEventListener('click', () => {

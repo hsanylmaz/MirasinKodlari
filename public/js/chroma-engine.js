@@ -248,10 +248,11 @@ window.ChromaEngine = (function () {
   function drawCompetitionFrame(ctx, w, h) {
     if (!config.showFrameOverlay) return;
 
-    const scale = w / 1920;
+    const isPortrait = h > w;
+    const scale = isPortrait ? w / 1080 : w / 1920;
     ctx.save();
 
-    const bannerH = Math.round(118 * scale);
+    const bannerH = Math.round((isPortrait ? 124 : 118) * scale);
     const bannerY = h - bannerH;
 
     const grad = ctx.createLinearGradient(0, bannerY, 0, h);
@@ -369,22 +370,34 @@ window.ChromaEngine = (function () {
     }
 
     if (sourceElem) {
-      offscreenCtx.clearRect(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
-      drawSubjectImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
-      const frameData = offscreenCtx.getImageData(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
+      const isPortrait = h > w;
+      const procW = isPortrait ? 540 : 960;
+      const procH = isPortrait ? 960 : 540;
+
+      if (offscreenCanvas.width !== procW || offscreenCanvas.height !== procH) {
+        offscreenCanvas.width = procW;
+        offscreenCanvas.height = procH;
+      }
+
+      offscreenCtx.clearRect(0, 0, procW, procH);
+      drawSubjectImage(offscreenCtx, sourceElem, procW, procH, shouldMirror);
+      const frameData = offscreenCtx.getImageData(0, 0, procW, procH);
       applyChromaKeyToImageData(frameData);
       offscreenCtx.putImageData(frameData, 0, 0);
 
-      ctx.drawImage(offscreenCanvas, 0, 0, PROCESS_WIDTH, PROCESS_HEIGHT, 0, 0, w, h);
+      ctx.drawImage(offscreenCanvas, 0, 0, procW, procH, 0, 0, w, h);
     }
 
     drawCompetitionFrame(ctx, w, h);
   }
 
-  function renderHighResCapture({ videoElement, staticSubjectImg, backgroundImg, isSimulation }) {
+  function renderHighResCapture({ videoElement, staticSubjectImg, backgroundImg, isSimulation, isPortrait = false }) {
+    const outW = isPortrait ? 1080 : 1920;
+    const outH = isPortrait ? 1920 : 1080;
+
     const captureCanvas = document.createElement('canvas');
-    captureCanvas.width = OUTPUT_WIDTH;
-    captureCanvas.height = OUTPUT_HEIGHT;
+    captureCanvas.width = outW;
+    captureCanvas.height = outH;
     const ctx = captureCanvas.getContext('2d');
 
     const { elem: sourceElem, shouldMirror } = resolveSourceElement({
@@ -395,28 +408,28 @@ window.ChromaEngine = (function () {
     });
 
     if (backgroundImg && backgroundImg.complete && backgroundImg.naturalWidth > 0) {
-      drawCoverImage(ctx, backgroundImg, OUTPUT_WIDTH, OUTPUT_HEIGHT, false);
+      drawCoverImage(ctx, backgroundImg, outW, outH, false);
     } else {
       ctx.fillStyle = '#111318';
-      ctx.fillRect(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+      ctx.fillRect(0, 0, outW, outH);
     }
 
     if (sourceElem) {
       const hiSubjectCanvas = document.createElement('canvas');
-      hiSubjectCanvas.width = OUTPUT_WIDTH;
-      hiSubjectCanvas.height = OUTPUT_HEIGHT;
+      hiSubjectCanvas.width = outW;
+      hiSubjectCanvas.height = outH;
       const hiCtx = hiSubjectCanvas.getContext('2d', { willReadFrequently: true });
 
-      drawSubjectImage(hiCtx, sourceElem, OUTPUT_WIDTH, OUTPUT_HEIGHT, shouldMirror);
+      drawSubjectImage(hiCtx, sourceElem, outW, outH, shouldMirror);
       if (config.enabled) {
-        const frameData = hiCtx.getImageData(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+        const frameData = hiCtx.getImageData(0, 0, outW, outH);
         applyChromaKeyToImageData(frameData);
         hiCtx.putImageData(frameData, 0, 0);
       }
       ctx.drawImage(hiSubjectCanvas, 0, 0);
     }
 
-    drawCompetitionFrame(ctx, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+    drawCompetitionFrame(ctx, outW, outH);
     return captureCanvas.toDataURL('image/png');
   }
 

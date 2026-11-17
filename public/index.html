@@ -21,6 +21,9 @@
     </div>
 
     <div class="header-actions">
+      <button type="button" class="btn btn-amber hidden" id="btnHeaderSetup" title="Hazırlık ve Arka Plan Ekranına Dön">
+        ⚙ AYARLAR / ARKA PLAN
+      </button>
       <button type="button" class="btn btn-emerald hide-on-mobile" id="btnOpenWifiStand" title="Öğrencilerin telefonlarıyla stüdyoya girmesi için QR panosunu açar">
         📱 STÜDYO GİRİŞ QR KODU
       </button>
@@ -36,10 +39,171 @@
     </div>
   </header>
 
-  <!-- Ana Çalışma Alanı -->
+  <!-- Ana Çalışma Alanı: 2 Aşamalı Akış (Hazırlık & Seçim -> Çekim Stüdyosu) -->
   <main class="studio-workspace">
-    <!-- Sol Sütun: Canlı Kamera Vizörü, Telefon Çekim Barı ve Arka Plan Seçici Film Şeridi -->
-    <section class="stage-column" aria-label="Canlı Önizleme ve Arka Plan Seçimi">
+    <!-- AŞAMA 1: HAZIRLIK & ARKA PLAN SEÇİM EKRANI -->
+    <section class="setup-stage" id="setupStage" aria-label="Hazırlık ve Arka Plan Seçimi">
+      <div class="setup-container">
+        <div class="setup-hero">
+          <div class="setup-badge">MİRASIN KODLARI // FOTOĞRAF STÜDYOSU</div>
+          <h2 class="setup-title">1. Hazırlık &amp; Arka Plan Seçimi</h2>
+          <p class="setup-subtitle">
+            Bilgilerinizi yazın, hatıra fotoğrafınız için arka planınızı seçin ve fotoğraf çekimine geçin.
+          </p>
+        </div>
+
+        <!-- 1. Katılımcı Bilgileri -->
+        <div class="setup-card">
+          <div class="setup-card-header">
+            <span class="step-num">1</span>
+            <h3>YARIŞMACI &amp; ÇERÇEVE BİLGİSİ</h3>
+          </div>
+          <div class="setup-form-grid">
+            <div class="field-group">
+              <label class="field-label" for="inputParticipantName">Öğrenci Adı Soyadı (İsteğe Bağlı)</label>
+              <input
+                type="text"
+                id="inputParticipantName"
+                class="studio-input"
+                placeholder="Örn: Elif Yılmaz"
+                maxlength="45"
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="inputTeamName">Takım / Okul Adı (İsteğe Bağlı)</label>
+              <input
+                type="text"
+                id="inputTeamName"
+                class="studio-input"
+                placeholder="Örn: Algoritma Avcıları"
+                maxlength="45"
+              />
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-top: 10px;">
+            <label for="chkShowFrame">"Mirasın Kodları" Çerçeve Bandını Göster</label>
+            <input type="checkbox" id="chkShowFrame" checked />
+          </div>
+        </div>
+
+        <!-- 2. Arka Plan Seçimi -->
+        <div class="setup-card">
+          <div class="setup-card-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="step-num">2</span>
+              <h3>ARKA PLAN SEÇİMİ</h3>
+            </div>
+            <button type="button" class="btn btn-amber" id="btnRefreshBgs" title="arkaplanlar/ klasörünü tara">
+              ↻ YENİLE
+            </button>
+          </div>
+          <p class="setup-card-hint">Fotoğrafınızda yer almasını istediğiniz arka plana dokunup seçin:</p>
+          <div class="filmstrip-list setup-bg-list" id="backgroundsList" role="listbox" aria-label="Arka Plan Görselleri">
+            <!-- JS tarafından doldurulur -->
+          </div>
+        </div>
+
+        <!-- 3. Kamera & Ayna Seçeneği -->
+        <div class="setup-card">
+          <div class="setup-card-header">
+            <span class="step-num">3</span>
+            <h3>KAMERA &amp; AYNA TERCİHİ</h3>
+          </div>
+          <div class="setup-camera-grid">
+            <div class="toggle-row">
+              <label for="chkMirror">Ayna Görüntüsü (Özçekim / Selfie)</label>
+              <input type="checkbox" id="chkMirror" checked />
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label" for="selectCamera">Kamera Kaynağı</label>
+              <div style="display:flex; gap:6px;">
+                <select id="selectCamera" class="studio-select" style="flex:1;">
+                  <option value="simulation">Demo Yeşil Perde Simülasyonu</option>
+                </select>
+                <button type="button" class="btn btn-amber" id="btnRestartCamera" title="Kamerayı yeniden başlat">
+                  ↻
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Korumalı Yeşil Perde İnce Ayarları (Sekmeli / Accordion) -->
+        <details class="setup-accordion" id="accordionChromaKey">
+          <summary class="accordion-summary">
+            <div class="accordion-summary-left">
+              <span class="accordion-icon">🔧</span>
+              <span class="accordion-title">YEŞİL PERDE İNCE AYARLARI (GELİŞMİŞ)</span>
+            </div>
+            <span class="accordion-badge">GEREKMEDİKÇE AÇMAYIN ▼</span>
+          </summary>
+          <div class="accordion-content">
+            <p class="accordion-help-text">
+              Stüdyonuzdaki yeşil perdenin aydınlatmasına göre ince ayar yapabilirsiniz. Varsayılan ayarlar çoğu stüdyo için idealdir.
+            </p>
+            <div class="color-picker-row">
+              <input
+                type="color"
+                id="inputKeyColor"
+                class="color-swatch-input"
+                value="#18c338"
+                title="Silinecek perde rengi"
+              />
+              <button type="button" class="btn btn-emerald" id="btnPickColorFromVideo" style="flex:1;">
+                🎯 EKRANDAN YEŞİL TONU SEÇ
+              </button>
+              <button type="button" class="btn" id="btnResetChroma" style="padding:4px 8px; font-size:11px;">
+                SIFIRLA
+              </button>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">
+                <label for="sliderSimilarity">Renk Toleransı (Hassasiyet)</label>
+                <span class="field-value" id="valSimilarity">34%</span>
+              </div>
+              <input type="range" id="sliderSimilarity" class="studio-range" min="5" max="75" value="34" />
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">
+                <label for="sliderSmoothness">Kenar Yumuşatma</label>
+                <span class="field-value" id="valSmoothness">12%</span>
+              </div>
+              <input type="range" id="sliderSmoothness" class="studio-range" min="1" max="35" value="12" />
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">
+                <label for="sliderSpill">Yeşil Yansıma Giderici (Spill)</label>
+                <span class="field-value" id="valSpill">45%</span>
+              </div>
+              <input type="range" id="sliderSpill" class="studio-range" min="0" max="100" value="45" />
+            </div>
+
+            <div class="toggle-row">
+              <label for="chkShowRawGreen">Orijinal Yeşil Perdeyi Göster (Test Modu)</label>
+              <input type="checkbox" id="chkShowRawGreen" />
+            </div>
+          </div>
+        </details>
+
+        <!-- Aşama 1 Bitiş: Çekime Başla Butonu -->
+        <div class="setup-cta-dock">
+          <button type="button" class="btn-setup-start" id="btnGoToShootStage">
+            <span>📸 FOTOĞRAF ÇEKİMİNE GEÇ ➡</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- AŞAMA 2: CANLI ÇEKİM STÜDYOSU (BAŞLANGIÇTA GİZLİ) -->
+    <section class="stage-column hidden" id="shootStage" aria-label="Canlı Önizleme ve Çekim">
+      <!-- Ayarlara Geri Dön Butonu -->
+      <button type="button" class="btn-back-to-setup" id="btnBackToSetupStage" title="Yarışmacı bilgisi veya arka planı değiştirmek için ayarlara dön">
+        <span>⚙ AYARLARI &amp; ARKA PLANI DEĞİŞTİR</span>
+      </button>
+
       <div class="viewfinder-shell" id="viewfinderShell">
         <!-- Gizli Kamera Video Kaynağı -->
         <video id="webcamVideo" playsinline autoplay muted class="hidden"></video>
@@ -50,7 +214,7 @@
         <!-- Üst Vizör Bilgi Etiketleri -->
         <div class="hud-overlay-top">
           <div class="hud-tag" id="activeBgLabel">SAHNE: YÜKLENİYOR...</div>
-          <div class="hud-tag amber hide-on-mobile" id="resolutionTag">1080P FULL HD • CHROMA KEY AKTİF</div>
+          <div class="hud-tag amber hide-on-mobile" id="resolutionTag">CANLI STÜDYO • CHROMA KEY AKTİF</div>
         </div>
 
         <!-- Kamera İzin / Başlatma İstemi (Tarayıcı İzinleri İçin) -->
@@ -127,169 +291,19 @@
           <button type="button" class="btn hidden" id="btnBackToLiveVideo" style="border-color:#EF4444; color:#FCA5A5;">
             🎥 CANLI KAMERAYA DÖN
           </button>
+          <button type="button" class="btn hidden" id="btnCapturePhotoMobile">
+            FOTOĞRAF ÇEK
+          </button>
         </div>
       </div>
 
-      <!-- Alt Arka Plan Seçici Film Şeridi -->
-      <div class="filmstrip-dock">
-        <div class="filmstrip-header">
-          <div class="filmstrip-title">
-            <span>1. ARKA PLAN SEÇİMİ (DOKUNUN)</span>
-            <span class="folder-path-hint hide-on-mobile" title="Görsellerinizi doğrudan arkaplanlar/ klasörüne atabilirsiniz">📁 arkaplanlar/</span>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button type="button" class="btn btn-amber" id="btnRefreshBgs" title="arkaplanlar/ klasöründeki görselleri yeniler">
-              ↻ YENİLE
-            </button>
-          </div>
-        </div>
-
-        <div class="filmstrip-list" id="backgroundsList" role="listbox" aria-label="Arka Plan Görselleri">
-          <!-- JS tarafından doldurulur -->
-        </div>
+      <!-- Uyumluluk için Gizli Butonlar -->
+      <div class="hidden">
+        <button type="button" id="btnCapturePhoto"></button>
+        <button type="button" id="btnDirectSaveSidebar"></button>
       </div>
     </section>
-
-    <!-- Sağ Sütun: Stüdyo Kontrol & Kalibrasyon İstasyonu -->
-    <aside class="control-rack" aria-label="Stüdyo ve Yeşil Perde Ayarları">
-      <!-- 1. Öğrenci / Takım Bilgisi & Çerçeve -->
-      <div class="rack-section">
-        <div class="rack-heading">
-          <span>2. YARIŞMACI &amp; ÇERÇEVE BİLGİSİ</span>
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="inputParticipantName">Öğrenci Adı Soyadı (İsteğe Bağlı)</label>
-          <input
-            type="text"
-            id="inputParticipantName"
-            class="studio-input"
-            placeholder="Örn: Elif Yılmaz"
-            maxlength="45"
-          />
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="inputTeamName">Takım / Okul Adı (İsteğe Bağlı)</label>
-          <input
-            type="text"
-            id="inputTeamName"
-            class="studio-input"
-            placeholder="Örn: Algoritma Avcıları"
-            maxlength="45"
-          />
-        </div>
-        <div class="toggle-row">
-          <label for="chkShowFrame">"Mirasın Kodları" Alt Bandını Göster</label>
-          <input type="checkbox" id="chkShowFrame" checked />
-        </div>
-      </div>
-
-      <!-- 2. Yeşil Perde (Chroma Key) Kalibrasyonu -->
-      <div class="rack-section">
-        <div class="rack-heading">
-          <span>3. YEŞİL PERDE (CHROMA KEY) AYARI</span>
-          <button type="button" class="btn" id="btnResetChroma" style="padding:3px 8px; font-size:11px;">
-            SIFIRLA
-          </button>
-        </div>
-
-        <div class="color-picker-row">
-          <input
-            type="color"
-            id="inputKeyColor"
-            class="color-swatch-input"
-            value="#18c338"
-            title="Silinecek perde rengi"
-          />
-          <button type="button" class="btn btn-emerald" id="btnPickColorFromVideo" style="flex:1;">
-            🎯 EKRANDAN YEŞİL TONU SEÇ
-          </button>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <label for="sliderSimilarity">Renk Toleransı (Hassasiyet)</label>
-            <span class="field-value" id="valSimilarity">34%</span>
-          </div>
-          <input
-            type="range"
-            id="sliderSimilarity"
-            class="studio-range"
-            min="5"
-            max="75"
-            value="34"
-          />
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <label for="sliderSmoothness">Kenar Yumuşatma</label>
-            <span class="field-value" id="valSmoothness">12%</span>
-          </div>
-          <input
-            type="range"
-            id="sliderSmoothness"
-            class="studio-range"
-            min="1"
-            max="35"
-            value="12"
-          />
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">
-            <label for="sliderSpill">Yeşil Yansıma Giderici (Spill)</label>
-            <span class="field-value" id="valSpill">45%</span>
-          </div>
-          <input
-            type="range"
-            id="sliderSpill"
-            class="studio-range"
-            min="0"
-            max="100"
-            value="45"
-          />
-        </div>
-
-        <div class="toggle-row">
-          <label for="chkShowRawGreen">Orijinal Yeşil Perdeyi Göster (Test)</label>
-          <input type="checkbox" id="chkShowRawGreen" />
-        </div>
-      </div>
-
-      <!-- 4. Kamera & Çekim Ayarları -->
-      <div class="rack-section">
-        <div class="rack-heading">
-          <span>4. KAMERA</span>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="selectCamera">Canlı Kamera Kaynağı</label>
-          <div style="display:flex; gap:6px;">
-            <select id="selectCamera" class="studio-select" style="flex:1;">
-              <option value="simulation">Demo Yeşil Perde Simülasyonu</option>
-            </select>
-            <button type="button" class="btn btn-amber" id="btnRestartCamera" title="Kamerayı yeniden başlat ve izinleri tara">
-              ↻
-            </button>
-          </div>
-        </div>
-
-        <div class="toggle-row">
-          <label for="chkMirror">Ayna Görüntüsü (Mirror)</label>
-          <input type="checkbox" id="chkMirror" checked />
-        </div>
-      </div>
-
-      <!-- Deklanşör & Doğrudan İndirme Butonları -->
-      <div class="shutter-dock">
-        <button type="button" class="btn-shutter" id="btnCapturePhoto">
-          <span>📸 FOTOĞRAF ÇEK</span>
-        </button>
-        <button type="button" class="btn-direct-save" id="btnDirectSaveSidebar">
-          <span>⬇ DOĞRUDAN TELEFONUMA / CİHAZA İNDİR</span>
-        </button>
-      </div>
-    </aside>
+  </main>
   </main>
 
   <!-- Stüdyo Giriş QR Karşılama Panosu Modalı -->
