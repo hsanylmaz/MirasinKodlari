@@ -217,6 +217,20 @@
           <div class="hud-tag amber hide-on-mobile" id="resolutionTag">CANLI STÜDYO • CHROMA KEY AKTİF</div>
         </div>
 
+        <!-- Sağ Üst Köşe: Çekim Oranı (Kadraj) Seçici HUD Kapsülü (16:9, 4:3, 1:1, 9:16) -->
+        <div class="hud-ratio-cluster" id="hudRatioCluster">
+          <button type="button" class="hud-ratio-btn" id="btnToggleRatioMenu" title="Kamera Çekim Oranını Değiştir">
+            <span class="hud-ratio-icon">📐</span>
+            <span class="hud-ratio-text" id="hudCurrentRatioText">16:9</span>
+          </button>
+          <div class="hud-ratio-menu hidden" id="hudRatioMenu" role="menu">
+            <button type="button" class="ratio-option-btn active" data-ratio="16:9">16:9</button>
+            <button type="button" class="ratio-option-btn" data-ratio="4:3">4:3</button>
+            <button type="button" class="ratio-option-btn" data-ratio="1:1">1:1</button>
+            <button type="button" class="ratio-option-btn" data-ratio="9:16">9:16</button>
+          </div>
+        </div>
+
         <!-- Kamera İzin / Başlatma İstemi (Tarayıcı İzinleri İçin) -->
         <div class="camera-prompt-overlay hidden" id="cameraPromptOverlay">
           <div class="camera-prompt-card">

@@ -370,9 +370,10 @@ window.ChromaEngine = (function () {
     }
 
     if (sourceElem) {
-      const isPortrait = h > w;
-      const procW = isPortrait ? 540 : 960;
-      const procH = isPortrait ? 960 : 540;
+      // Offscreen canvas boyutlarını targetCanvas'ın en-boy oranına (aspect ratio) tam uyumlu hesapla:
+      // Böylece 16:9, 4:3, 1:1, 9:16 oranlarında hiçbir esneme veya bozulma olmaz.
+      const procW = Math.round(w > 960 ? 960 : w);
+      const procH = Math.round((h / w) * procW);
 
       if (offscreenCanvas.width !== procW || offscreenCanvas.height !== procH) {
         offscreenCanvas.width = procW;
@@ -391,9 +392,31 @@ window.ChromaEngine = (function () {
     drawCompetitionFrame(ctx, w, h);
   }
 
-  function renderHighResCapture({ videoElement, staticSubjectImg, backgroundImg, isSimulation, isPortrait = false }) {
-    const outW = isPortrait ? 1080 : 1920;
-    const outH = isPortrait ? 1920 : 1080;
+  const CAPTURE_PRESETS = {
+    '16:9': { w: 1920, h: 1080 },
+    '4:3':  { w: 1920, h: 1440 },
+    '1:1':  { w: 1440, h: 1440 },
+    '9:16': { w: 1080, h: 1920 },
+  };
+
+  function renderHighResCapture({
+    videoElement,
+    staticSubjectImg,
+    backgroundImg,
+    isSimulation,
+    isPortrait = false,
+    targetRatio = null,
+  }) {
+    let outW = 1920;
+    let outH = 1080;
+
+    if (targetRatio && CAPTURE_PRESETS[targetRatio]) {
+      outW = CAPTURE_PRESETS[targetRatio].w;
+      outH = CAPTURE_PRESETS[targetRatio].h;
+    } else {
+      outW = isPortrait ? 1080 : 1920;
+      outH = isPortrait ? 1920 : 1080;
+    }
 
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = outW;
@@ -442,10 +465,13 @@ window.ChromaEngine = (function () {
     });
     if (!sourceElem) return null;
 
-    offscreenCtx.clearRect(0, 0, PROCESS_WIDTH, PROCESS_HEIGHT);
-    drawSubjectImage(offscreenCtx, sourceElem, PROCESS_WIDTH, PROCESS_HEIGHT, shouldMirror);
-    const px = Math.max(0, Math.min(PROCESS_WIDTH - 1, Math.floor(normX * PROCESS_WIDTH)));
-    const py = Math.max(0, Math.min(PROCESS_HEIGHT - 1, Math.floor(normY * PROCESS_HEIGHT)));
+    const w = offscreenCanvas.width || PROCESS_WIDTH;
+    const h = offscreenCanvas.height || PROCESS_HEIGHT;
+
+    offscreenCtx.clearRect(0, 0, w, h);
+    drawSubjectImage(offscreenCtx, sourceElem, w, h, shouldMirror);
+    const px = Math.max(0, Math.min(w - 1, Math.floor(normX * w)));
+    const py = Math.max(0, Math.min(h - 1, Math.floor(normY * h)));
     const pixel = offscreenCtx.getImageData(px, py, 1, 1).data;
 
     const picked = { r: pixel[0], g: pixel[1], b: pixel[2] };

@@ -20,6 +20,7 @@
     isEyedropperMode: false,
     isCountingDown: false,
     currentStage: 'setup',
+    selectedRatio: null, // '16:9' | '4:3' | '1:1' | '9:16' (null ise yöne göre otomatik)
   };
 
   const els = {
@@ -51,6 +52,13 @@
     btnHudFlipCamera: document.getElementById('btnHudFlipCamera'),
     btnHudQuickDownload: document.getElementById('btnHudQuickDownload'),
     btnToggleAspectFit: document.getElementById('btnToggleAspectFit'),
+
+    // Kadraj / Çekim Oranı Seçici (HUD Sağ Üst Buton ve Menü)
+    hudRatioCluster: document.getElementById('hudRatioCluster'),
+    btnToggleRatioMenu: document.getElementById('btnToggleRatioMenu'),
+    hudCurrentRatioText: document.getElementById('hudCurrentRatioText'),
+    hudRatioMenu: document.getElementById('hudRatioMenu'),
+    ratioOptionBtns: document.querySelectorAll('.ratio-option-btn'),
 
     // Mobil / Telefon Kamera Elemanları
     mobileRearCameraInput: document.getElementById('mobileRearCameraInput'),
@@ -118,6 +126,68 @@
 
   let lastOrientationIsLandscape = null;
 
+  const RATIO_CONFIGS = {
+    '16:9': { w: 1280, h: 720, cssRatio: '16 / 9', highResW: 1920, highResH: 1080, aspectIdeal: 1.77777778 },
+    '4:3':  { w: 1200, h: 900, cssRatio: '4 / 3',  highResW: 1920, highResH: 1440, aspectIdeal: 1.33333333 },
+    '1:1':  { w: 960,  h: 960, cssRatio: '1 / 1',  highResW: 1440, highResH: 1440, aspectIdeal: 1.0 },
+    '9:16': { w: 720,  h: 1280, cssRatio: '9 / 16', highResW: 1080, highResH: 1920, aspectIdeal: 0.5625 },
+  };
+
+  function getActiveRatio() {
+    if (state.selectedRatio && RATIO_CONFIGS[state.selectedRatio]) {
+      return state.selectedRatio;
+    }
+    const isLandscape =
+      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
+      window.innerWidth > window.innerHeight;
+    return isLandscape ? '16:9' : '9:16';
+  }
+
+  async function applyAspectRatio(ratioKey, userInitiated = false) {
+    if (!RATIO_CONFIGS[ratioKey]) return;
+    const cfg = RATIO_CONFIGS[ratioKey];
+
+    if (userInitiated) {
+      state.selectedRatio = ratioKey;
+    }
+
+    if (els.hudCurrentRatioText) {
+      els.hudCurrentRatioText.textContent = ratioKey;
+    }
+
+    if (els.ratioOptionBtns) {
+      els.ratioOptionBtns.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.ratio === ratioKey);
+      });
+    }
+
+    if (els.stageCanvas) {
+      if (els.stageCanvas.width !== cfg.w || els.stageCanvas.height !== cfg.h) {
+        els.stageCanvas.width = cfg.w;
+        els.stageCanvas.height = cfg.h;
+      }
+      // 16:9 dışındaki kadraj oranlarında (4:3, 1:1, 9:16) yatay ekranda kırpılmayı önlemek için contain-mode uygula
+      if (ratioKey !== '16:9') {
+        els.stageCanvas.classList.add('contain-mode');
+      } else {
+        els.stageCanvas.classList.remove('contain-mode');
+      }
+    }
+
+    if (els.viewfinderShell) {
+      els.viewfinderShell.style.aspectRatio = cfg.cssRatio;
+    }
+
+    // Kullanıcı kadraj oranını değiştirdiğinde ve canlı kamera açıksa kamerayı yeni orana göre yeniden başlat
+    if (userInitiated && !state.isSimulation && !state.staticSubjectImg && state.videoStream) {
+      try {
+        await initCameraDevices(state.currentFacingMode);
+      } catch (err) {
+        console.warn('Oran değişimi sonrası kamera güncellenemedi:', err);
+      }
+    }
+  }
+
   function updateOrientationClass() {
     const isLandscape =
       (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
@@ -126,22 +196,15 @@
     document.documentElement.classList.toggle('is-landscape', isLandscape);
     document.documentElement.classList.toggle('is-portrait', !isLandscape);
 
-    // Canvas çözünürlüğünü yöne göre ayarla:
-    // Dikeyde: 720 genişlik x 1280 yükseklik (9:16 dikey oran)
-    // Yatayda: 1280 genişlik x 720 yükseklik (16:9 yatay oran)
-    const targetW = isLandscape ? 1280 : 720;
-    const targetH = isLandscape ? 720 : 1280;
-
-    if (els.stageCanvas && (els.stageCanvas.width !== targetW || els.stageCanvas.height !== targetH)) {
-      els.stageCanvas.width = targetW;
-      els.stageCanvas.height = targetH;
-    }
+    // Aktif kadraj oranını (kullanıcı seçimi veya yöne göre otomatik) canvas ve vizöre uygula
+    const activeRatio = getActiveRatio();
+    applyAspectRatio(activeRatio, false);
 
     // Eğer yön gerçekten dikeyden yataya veya yataydan dikeye değiştiyse
     // canlı kamerayı yeni yöne uygun çözünürlükle güncelle
     if (lastOrientationIsLandscape !== null && lastOrientationIsLandscape !== isLandscape) {
       lastOrientationIsLandscape = isLandscape;
-      if (!state.isSimulation && !state.staticSubjectImg && state.webcamStream) {
+      if (!state.isSimulation && !state.staticSubjectImg && state.videoStream) {
         initCameraDevices(state.currentFacingMode).catch((err) => {
           console.warn('Yön değişimi sonrası kamera güncellenemedi:', err);
         });
@@ -380,25 +443,45 @@
     const facingMode = preferredFacingMode || state.currentFacingMode || 'user';
     state.currentFacingMode = facingMode;
 
-    const requestUserMediaWithFallback = async () => {
-      // 1. Önce cihazın yönüne (dikey/yatay) ve kamera türüne göre ideal çözünürlükle dene
-      const isPortrait =
-        (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ||
-        window.innerHeight > window.innerWidth;
+    const activeRatioKey = getActiveRatio();
+    const ratioCfg = RATIO_CONFIGS[activeRatioKey] || RATIO_CONFIGS['16:9'];
 
+    const requestUserMediaWithFallback = async () => {
+      // Önceki stream track'lerini durdurarak donanım sensörünün doğru yön/çözünürlükle açılmasını sağla
+      if (state.videoStream) {
+        try {
+          state.videoStream.getTracks().forEach((t) => t.stop());
+        } catch (_) {}
+      }
+
+      // 1. Önce aktif kadraj oranına (16:9, 4:3, 1:1, 9:16) ve kamera türüne göre ideal çözünürlükle dene
       try {
         const videoConstraints = {
           facingMode: { ideal: facingMode },
         };
-        // Arka kamera 16:9 HD destekler. Ön kamera ise doğal 4:3 geniş açılıdır.
-        // Ön kameraya zorla 16:9 çözünürlük istenirse mobil tarayıcı sürücüsü görüntüyü
-        // sensörden keserek aşırı yakınlaştırır. Bu yüzden ön kamerada doğal kırpmasız sensör oranı istenir:
-        if (facingMode === 'user') {
-          videoConstraints.width = { ideal: isPortrait ? 960 : 1280 };
-          videoConstraints.height = { ideal: isPortrait ? 1280 : 960 };
-        } else {
-          videoConstraints.width = { ideal: isPortrait ? 1080 : 1920 };
-          videoConstraints.height = { ideal: isPortrait ? 1920 : 1080 };
+
+        if (activeRatioKey === '16:9') {
+          videoConstraints.width = { ideal: 1920 };
+          videoConstraints.height = { ideal: 1080 };
+          videoConstraints.aspectRatio = { ideal: 1.77777778 };
+        } else if (activeRatioKey === '9:16') {
+          videoConstraints.width = { ideal: 1080 };
+          videoConstraints.height = { ideal: 1920 };
+          videoConstraints.aspectRatio = { ideal: 0.5625 };
+        } else if (activeRatioKey === '4:3') {
+          videoConstraints.width = { ideal: 1440 };
+          videoConstraints.height = { ideal: 1080 };
+          videoConstraints.aspectRatio = { ideal: 1.33333333 };
+        } else if (activeRatioKey === '1:1') {
+          videoConstraints.width = { ideal: 1080 };
+          videoConstraints.height = { ideal: 1080 };
+          videoConstraints.aspectRatio = { ideal: 1.0 };
+        }
+
+        // Ön kamera (selfie) için doğal sensör oranı (genellikle 4:3) yakınlaştırmayı önler
+        if (facingMode === 'user' && activeRatioKey === '16:9') {
+          videoConstraints.width = { ideal: 1280 };
+          videoConstraints.height = { ideal: 960 };
         }
 
         return await navigator.mediaDevices.getUserMedia({
@@ -618,12 +701,14 @@
     try {
       const bgImg = state.selectedBg ? state.bgImageCache.get(state.selectedBg.url) : null;
       const isPortrait = els.stageCanvas ? els.stageCanvas.height > els.stageCanvas.width : false;
+      const activeRatio = getActiveRatio();
       const imageDataUrl = window.ChromaEngine.renderHighResCapture({
         videoElement: els.webcamVideo,
         staticSubjectImg: state.staticSubjectImg,
         backgroundImg: bgImg,
         isSimulation: state.isSimulation,
         isPortrait,
+        targetRatio: activeRatio,
       });
 
       const cleanName = (els.inputParticipantName.value || els.inputTeamName.value || 'Hatira')
@@ -980,6 +1065,41 @@
         await initCameraDevices(nextFacing);
       });
     }
+
+    // Kadraj / Çekim Oranı Seçici Menüsü (16:9, 4:3, 1:1, 9:16)
+    if (els.btnToggleRatioMenu && els.hudRatioMenu) {
+      els.btnToggleRatioMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        els.hudRatioMenu.classList.toggle('hidden');
+      });
+    }
+
+    if (els.ratioOptionBtns) {
+      els.ratioOptionBtns.forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const selected = btn.dataset.ratio;
+          if (selected) {
+            await applyAspectRatio(selected, true);
+          }
+          if (els.hudRatioMenu) {
+            els.hudRatioMenu.classList.add('hidden');
+          }
+        });
+      });
+    }
+
+    // Menü dışına tıklandığında kadraj menüsünü kapat
+    document.addEventListener('click', (e) => {
+      if (
+        els.hudRatioMenu &&
+        !els.hudRatioMenu.classList.contains('hidden') &&
+        els.hudRatioCluster &&
+        !els.hudRatioCluster.contains(e.target)
+      ) {
+        els.hudRatioMenu.classList.add('hidden');
+      }
+    });
 
     if (els.btnToggleAspectFit) {
       els.btnToggleAspectFit.addEventListener('click', () => {
