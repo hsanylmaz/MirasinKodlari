@@ -14,6 +14,34 @@
       "title": "Arkaplan2",
       "url": "./arkaplanlar/Arkaplan2.jpeg",
       "updatedAt": "2026-11-10T12:44:46.730Z"
+    },
+    {
+      "id": "QXJrYXBsYW4zLmpwZWc",
+      "fileName": "Arkaplan3.jpeg",
+      "title": "Arkaplan3",
+      "url": "./arkaplanlar/Arkaplan3.jpeg",
+      "updatedAt": "2026-11-24T05:53:22.395Z"
+    },
+    {
+      "id": "QXJrYXBsYW40LmpwZWc",
+      "fileName": "Arkaplan4.jpeg",
+      "title": "Arkaplan4",
+      "url": "./arkaplanlar/Arkaplan4.jpeg",
+      "updatedAt": "2026-11-24T05:53:22.402Z"
+    },
+    {
+      "id": "QXJrYXBsYW41LmpwZWc",
+      "fileName": "Arkaplan5.jpeg",
+      "title": "Arkaplan5",
+      "url": "./arkaplanlar/Arkaplan5.jpeg",
+      "updatedAt": "2026-11-24T05:53:22.405Z"
+    },
+    {
+      "id": "QXJrYXBsYW42LmpwZWc",
+      "fileName": "Arkaplan6.jpeg",
+      "title": "Arkaplan6",
+      "url": "./arkaplanlar/Arkaplan6.jpeg",
+      "updatedAt": "2026-11-24T05:53:22.408Z"
     }
   ]
 }

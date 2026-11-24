@@ -29,7 +29,7 @@ window.ChromaEngine = (function () {
     showFrameOverlay: true,
     subjectFitMode: 'fit', // 'fit' (doğal 1x, yakınlaştırmasız) veya 'cover' (dolu)
     eventTitle: 'MİRASIN KODLARI',
-    eventSubtitle: 'YAZILIM & TEKNOLOJİ YARIŞMASI HATIRASI',
+    eventSubtitle: 'Dijital Yürüyüş STEM Hatırası',
     participantName: '',
     teamName: '',
   };
@@ -276,7 +276,7 @@ window.ChromaEngine = (function () {
     ctx.fillStyle = '#D1D5DB';
     ctx.font = `600 ${Math.round(18 * scale)}px "JetBrains Mono", monospace`;
     ctx.fillText(
-      config.eventSubtitle || 'YAZILIM & TEKNOLOJİ YARIŞMASI HATIRASI',
+      config.eventSubtitle || 'Dijital Yürüyüş STEM Hatırası',
       Math.round(84 * scale),
       bannerY + Math.round(66 * scale)
     );
