@@ -933,9 +933,11 @@
     els.inputParticipantName.addEventListener('input', () => {
       window.ChromaEngine.updateConfig({ participantName: els.inputParticipantName.value });
     });
-    els.inputTeamName.addEventListener('input', () => {
+    const handleTeamSelection = () => {
       window.ChromaEngine.updateConfig({ teamName: els.inputTeamName.value });
-    });
+    };
+    els.inputTeamName.addEventListener('input', handleTeamSelection);
+    els.inputTeamName.addEventListener('change', handleTeamSelection);
     els.chkShowFrame.addEventListener('change', () => {
       window.ChromaEngine.updateConfig({ showFrameOverlay: els.chkShowFrame.checked });
     });

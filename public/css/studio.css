@@ -1094,6 +1094,11 @@ html, body {
   border-radius: 2px;
 }
 
+.studio-select option {
+  background: var(--bg-card, #121820);
+  color: var(--text-main, #F3F4F6);
+}
+
 .studio-input:focus,
 .studio-select:focus {
   outline: none;

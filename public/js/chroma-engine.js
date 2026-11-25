@@ -282,7 +282,10 @@ window.ChromaEngine = (function () {
     );
 
     const pName = (config.participantName || '').trim();
-    const tName = (config.teamName || '').trim();
+    let tName = (config.teamName || '').trim();
+    if (/^(seçim|secim|takım|takim)\s*(yapılmadı|yapilmadi|seçiniz|seciniz)?$/i.test(tName)) {
+      tName = '';
+    }
     const rightX = w - Math.round(56 * scale);
     ctx.textAlign = 'right';
 
