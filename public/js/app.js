@@ -603,6 +603,9 @@
       const img = new Image();
       img.onload = () => {
         state.staticSubjectImg = img;
+        if (window.ChromaEngine && window.ChromaEngine.resetGreenScreenBounds) {
+          window.ChromaEngine.resetGreenScreenBounds();
+        }
         els.btnBackToLiveVideo.classList.remove('hidden');
         els.cameraStatusText.textContent = 'TELEFON FOTOĞRAFI İŞLENDİ';
 
@@ -916,6 +919,9 @@
 
     els.btnBackToLiveVideo.addEventListener('click', () => {
       state.staticSubjectImg = null;
+      if (window.ChromaEngine && window.ChromaEngine.resetGreenScreenBounds) {
+        window.ChromaEngine.resetGreenScreenBounds();
+      }
       els.btnBackToLiveVideo.classList.add('hidden');
       els.cameraStatusText.textContent = state.isSimulation ? 'DEMO SİMÜLASYON AKTİF' : 'CANLI KAMERA AKTİF';
     });

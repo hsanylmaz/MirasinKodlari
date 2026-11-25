@@ -1760,19 +1760,20 @@ html.is-portrait .btn-back-to-setup {
     z-index: 35 !important;
   }
 
-  /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ KENARDA BAŞPARMAK HİZASINDA */
+  /* DEKLANŞÖR ÇUBUĞU HER ZAMAN SABİT: EKRANIN ALTINDA, ASLA YER DEĞİŞTİRMEZ */
   .hud-shutter-overlay {
-    top: 50% !important;
-    bottom: auto !important;
-    right: max(16px, env(safe-area-inset-right, 16px)) !important;
-    left: auto !important;
-    transform: translateY(-50%) !important;
-    flex-direction: column !important;
+    position: absolute !important;
+    top: auto !important;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 12px !important;
-    padding: 12px 10px !important;
-    border-radius: 40px !important;
+    gap: 16px !important;
+    padding: 8px 18px !important;
+    border-radius: 50px !important;
     background: rgba(9, 10, 12, 0.76) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
@@ -1786,8 +1787,8 @@ html.is-portrait .btn-back-to-setup {
   }
 
   .hud-shutter-button {
-    width: 68px !important;
-    height: 68px !important;
+    width: 72px !important;
+    height: 72px !important;
   }
 
   .hud-btn {
@@ -1797,12 +1798,12 @@ html.is-portrait .btn-back-to-setup {
 
   .hud-ratio-menu {
     position: absolute !important;
-    right: calc(100% + 10px) !important;
-    left: auto !important;
-    top: 0 !important;
-    bottom: auto !important;
-    transform: none !important;
-    flex-direction: column !important;
+    bottom: calc(100% + 12px) !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
     gap: 6px !important;
   }
 
@@ -1916,18 +1917,20 @@ html.is-portrait .btn-back-to-setup {
     z-index: 35 !important;
   }
 
+  /* DEKLANŞÖR ÇUBUĞU HER ZAMAN SABİT: EKRANIN ALTINDA, ASLA YER DEĞİŞTİRMEZ */
   html.is-landscape .hud-shutter-overlay {
-    top: 50% !important;
-    bottom: auto !important;
-    right: max(16px, env(safe-area-inset-right, 16px)) !important;
-    left: auto !important;
-    transform: translateY(-50%) !important;
-    flex-direction: column !important;
+    position: absolute !important;
+    top: auto !important;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 12px !important;
-    padding: 12px 10px !important;
-    border-radius: 40px !important;
+    gap: 16px !important;
+    padding: 8px 18px !important;
+    border-radius: 50px !important;
     background: rgba(9, 10, 12, 0.76) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
@@ -1941,8 +1944,8 @@ html.is-portrait .btn-back-to-setup {
   }
 
   html.is-landscape .hud-shutter-button {
-    width: 68px !important;
-    height: 68px !important;
+    width: 72px !important;
+    height: 72px !important;
   }
 
   html.is-landscape .hud-btn {
@@ -1952,12 +1955,12 @@ html.is-portrait .btn-back-to-setup {
 
   html.is-landscape .hud-ratio-menu {
     position: absolute !important;
-    right: calc(100% + 10px) !important;
-    left: auto !important;
-    top: 0 !important;
-    bottom: auto !important;
-    transform: none !important;
-    flex-direction: column !important;
+    bottom: calc(100% + 12px) !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
     gap: 6px !important;
   }
 

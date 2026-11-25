@@ -126,8 +126,23 @@ window.ChromaEngine = (function () {
     return simCanvas;
   }
 
+  const greenScreenState = {
+    detected: false,
+    smoothMinX: 0,
+    smoothMaxX: 1,
+    smoothMinY: 0,
+    smoothMaxY: 1,
+  };
+
+  function resetGreenScreenBounds() {
+    greenScreenState.detected = false;
+  }
+
   function applyChromaKeyToImageData(imageData) {
     const data = imageData.data;
+    const imgW = imageData.width;
+    const imgH = imageData.height;
+
     const keyR = config.keyColor.r;
     const keyG = config.keyColor.g;
     const keyB = config.keyColor.b;
@@ -136,6 +151,15 @@ window.ChromaEngine = (function () {
     const tol = Math.max(0.02, config.similarity) * 175;
     const smooth = Math.max(0.01, config.smoothness) * 135;
     const spill = config.spillSuppression;
+
+    let minX = imgW;
+    let maxX = 0;
+    let minY = imgH;
+    let maxY = 0;
+    let greenCount = 0;
+
+    const colGreen = new Uint16Array(imgW);
+    const rowGreen = new Uint16Array(imgH);
 
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -152,8 +176,22 @@ window.ChromaEngine = (function () {
       let alpha = 1.0;
       if (dist < tol) {
         alpha = 0.0;
+        const pIdx = i >> 2;
+        const px = pIdx % imgW;
+        const py = Math.floor(pIdx / imgW);
+        colGreen[px]++;
+        rowGreen[py]++;
+        greenCount++;
       } else if (dist < tol + smooth) {
         alpha = (dist - tol) / smooth;
+        if (alpha < 0.6) {
+          const pIdx = i >> 2;
+          const px = pIdx % imgW;
+          const py = Math.floor(pIdx / imgW);
+          colGreen[px]++;
+          rowGreen[py]++;
+          greenCount++;
+        }
       }
 
       if (alpha > 0 && spill > 0) {
@@ -166,6 +204,92 @@ window.ChromaEngine = (function () {
 
       data[i + 3] = Math.round(alpha * 255);
     }
+
+    // Yeşil perdenin sınırlarını histogram eşiğiyle parazitlerden arındırarak bul:
+    const colThreshold = Math.max(5, Math.round(imgH * 0.06));
+    const rowThreshold = Math.max(5, Math.round(imgW * 0.06));
+
+    for (let x = 0; x < imgW; x++) {
+      if (colGreen[x] >= colThreshold) {
+        minX = x;
+        break;
+      }
+    }
+    for (let x = imgW - 1; x >= 0; x--) {
+      if (colGreen[x] >= colThreshold) {
+        maxX = x;
+        break;
+      }
+    }
+    for (let y = 0; y < imgH; y++) {
+      if (rowGreen[y] >= rowThreshold) {
+        minY = y;
+        break;
+      }
+    }
+    for (let y = imgH - 1; y >= 0; y--) {
+      if (rowGreen[y] >= rowThreshold) {
+        maxY = y;
+        break;
+      }
+    }
+
+    // En az %1.5 yeşil alan varsa ve dikdörtgen yeterince genişse yeşil perde alanını güncelle:
+    if (greenCount > imgW * imgH * 0.015 && maxX > minX + 20 && maxY > minY + 20) {
+      // Kenarlardan %1.5 hafif pay bırak (yeşil kumaş kenarlarına tam oturması için)
+      let tMinX = Math.max(0, (minX / imgW) - 0.015);
+      let tMaxX = Math.min(1, (maxX / imgW) + 0.015);
+      let tMinY = Math.max(0, (minY / imgH) - 0.015);
+      let tMaxY = Math.min(1, (maxY / imgH) + 0.015);
+
+      if (!greenScreenState.detected) {
+        greenScreenState.smoothMinX = tMinX;
+        greenScreenState.smoothMaxX = tMaxX;
+        greenScreenState.smoothMinY = tMinY;
+        greenScreenState.smoothMaxY = tMaxY;
+        greenScreenState.detected = true;
+      } else {
+        const factor = 0.14;
+        greenScreenState.smoothMinX += (tMinX - greenScreenState.smoothMinX) * factor;
+        greenScreenState.smoothMaxX += (tMaxX - greenScreenState.smoothMaxX) * factor;
+        greenScreenState.smoothMinY += (tMinY - greenScreenState.smoothMinY) * factor;
+        greenScreenState.smoothMaxY += (tMaxY - greenScreenState.smoothMaxY) * factor;
+      }
+    }
+  }
+
+  function drawBackgroundFittedToGreenScreen(ctx, bgImg, targetW, targetH) {
+    if (!bgImg || !bgImg.complete || !bgImg.naturalWidth) {
+      ctx.fillStyle = '#111318';
+      ctx.fillRect(0, 0, targetW, targetH);
+      return;
+    }
+
+    // Arka planı koyu zeminle doldur
+    ctx.fillStyle = '#090A0C';
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    const srcW = bgImg.naturalWidth || bgImg.width;
+    const srcH = bgImg.naturalHeight || bgImg.height;
+
+    // Eğer yeşil perde tespit edildiyse, arka plan afişini tam yeşil perdenin sınırlarına oturt:
+    if (greenScreenState.detected) {
+      const gx = Math.round(greenScreenState.smoothMinX * targetW);
+      const gy = Math.round(greenScreenState.smoothMinY * targetH);
+      const gw = Math.round((greenScreenState.smoothMaxX - greenScreenState.smoothMinX) * targetW);
+      const gh = Math.round((greenScreenState.smoothMaxY - greenScreenState.smoothMinY) * targetH);
+
+      if (gw > 40 && gh > 40) {
+        // Arka plan afişini yeşil perde alanının içine hiçbir yazı kesilmeyecek şekilde eksiksiz çiz:
+        ctx.save();
+        ctx.drawImage(bgImg, 0, 0, srcW, srcH, gx, gy, gw, gh);
+        ctx.restore();
+        return;
+      }
+    }
+
+    // Yeşil perde henüz bulunamadıysa standart kaplama yap:
+    drawCoverImage(ctx, bgImg, targetW, targetH, false);
   }
 
   function drawCoverImage(ctx, img, targetW, targetH, mirror) {
@@ -365,16 +489,8 @@ window.ChromaEngine = (function () {
       return;
     }
 
-    if (backgroundImg && backgroundImg.complete && backgroundImg.naturalWidth > 0) {
-      drawCoverImage(ctx, backgroundImg, w, h, false);
-    } else {
-      ctx.fillStyle = '#111318';
-      ctx.fillRect(0, 0, w, h);
-    }
-
     if (sourceElem) {
       // Offscreen canvas boyutlarını targetCanvas'ın en-boy oranına (aspect ratio) tam uyumlu hesapla:
-      // Böylece 16:9, 4:3, 1:1, 9:16 oranlarında hiçbir esneme veya bozulma olmaz.
       const procW = Math.round(w > 960 ? 960 : w);
       const procH = Math.round((h / w) * procW);
 
@@ -388,8 +504,14 @@ window.ChromaEngine = (function () {
       const frameData = offscreenCtx.getImageData(0, 0, procW, procH);
       applyChromaKeyToImageData(frameData);
       offscreenCtx.putImageData(frameData, 0, 0);
+    }
 
-      ctx.drawImage(offscreenCanvas, 0, 0, procW, procH, 0, 0, w, h);
+    // 1. Arka plan afişini her zaman yeşil perdenin sınırlarına tam sığacak şekilde çiz:
+    drawBackgroundFittedToGreenScreen(ctx, backgroundImg, w, h);
+
+    // 2. Şeffaflaştırılmış kamera görüntüsünü arka planın üzerine bas:
+    if (sourceElem) {
+      ctx.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, w, h);
     }
 
     drawCompetitionFrame(ctx, w, h);
@@ -433,15 +555,9 @@ window.ChromaEngine = (function () {
       timestamp: performance.now(),
     });
 
-    if (backgroundImg && backgroundImg.complete && backgroundImg.naturalWidth > 0) {
-      drawCoverImage(ctx, backgroundImg, outW, outH, false);
-    } else {
-      ctx.fillStyle = '#111318';
-      ctx.fillRect(0, 0, outW, outH);
-    }
-
+    let hiSubjectCanvas = null;
     if (sourceElem) {
-      const hiSubjectCanvas = document.createElement('canvas');
+      hiSubjectCanvas = document.createElement('canvas');
       hiSubjectCanvas.width = outW;
       hiSubjectCanvas.height = outH;
       const hiCtx = hiSubjectCanvas.getContext('2d', { willReadFrequently: true });
@@ -452,6 +568,12 @@ window.ChromaEngine = (function () {
         applyChromaKeyToImageData(frameData);
         hiCtx.putImageData(frameData, 0, 0);
       }
+    }
+
+    // Arka plan afişini yüksek çözünürlükte tam yeşil perde sınırlarına oturt:
+    drawBackgroundFittedToGreenScreen(ctx, backgroundImg, outW, outH);
+
+    if (hiSubjectCanvas) {
       ctx.drawImage(hiSubjectCanvas, 0, 0);
     }
 
@@ -546,6 +668,7 @@ window.ChromaEngine = (function () {
     renderHighResCapture,
     sampleRawColorAtNormalizedPoint,
     autoDetectGreenFromImage,
+    resetGreenScreenBounds,
     updateConfig,
     getConfig,
   };
