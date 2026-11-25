@@ -174,7 +174,9 @@ window.ChromaEngine = (function () {
       const dist = Math.sqrt(dCb * dCb + dCr * dCr);
 
       let alpha = 1.0;
-      if (dist < tol) {
+      const isDominantGreen = g > 62 && g > r * 1.22 && g > b * 1.18;
+
+      if (dist < tol || (isDominantGreen && dist < tol * 1.28)) {
         alpha = 0.0;
         const pIdx = i >> 2;
         const px = pIdx % imgW;
@@ -182,9 +184,10 @@ window.ChromaEngine = (function () {
         colGreen[px]++;
         rowGreen[py]++;
         greenCount++;
-      } else if (dist < tol + smooth) {
-        alpha = (dist - tol) / smooth;
-        if (alpha < 0.6) {
+      } else if (dist < tol + smooth || (isDominantGreen && dist < tol * 1.28 + smooth)) {
+        const effTol = isDominantGreen ? Math.min(dist, tol) : tol;
+        alpha = Math.max(0, Math.min(1, (dist - effTol) / smooth));
+        if (alpha < 0.65 || isDominantGreen) {
           const pIdx = i >> 2;
           const px = pIdx % imgW;
           const py = Math.floor(pIdx / imgW);
@@ -205,9 +208,9 @@ window.ChromaEngine = (function () {
       data[i + 3] = Math.round(alpha * 255);
     }
 
-    // Yeşil perdenin sınırlarını histogram eşiğiyle parazitlerden arındırarak bul:
-    const colThreshold = Math.max(5, Math.round(imgH * 0.06));
-    const rowThreshold = Math.max(5, Math.round(imgW * 0.06));
+    // Yeşil perdenin sınırlarını kişi perdenin önünde dursa bile (baş üstü/yan boşluklardan) tam yakala:
+    const colThreshold = Math.max(4, Math.round(imgH * 0.015));
+    const rowThreshold = Math.max(4, Math.round(imgW * 0.02));
 
     for (let x = 0; x < imgW; x++) {
       if (colGreen[x] >= colThreshold) {
@@ -236,11 +239,11 @@ window.ChromaEngine = (function () {
 
     // En az %1.5 yeşil alan varsa ve dikdörtgen yeterince genişse yeşil perde alanını güncelle:
     if (greenCount > imgW * imgH * 0.015 && maxX > minX + 20 && maxY > minY + 20) {
-      // Kenarlardan %1.5 hafif pay bırak (yeşil kumaş kenarlarına tam oturması için)
-      let tMinX = Math.max(0, (minX / imgW) - 0.015);
-      let tMaxX = Math.min(1, (maxX / imgW) + 0.015);
-      let tMinY = Math.max(0, (minY / imgH) - 0.015);
-      let tMaxY = Math.min(1, (maxY / imgH) + 0.015);
+      // Kenarlardan %0.8 hafif pay bırak (yeşil kumaş kenarlarına tam oturması için)
+      let tMinX = Math.max(0, (minX / imgW) - 0.008);
+      let tMaxX = Math.min(1, (maxX / imgW) + 0.008);
+      let tMinY = Math.max(0, (minY / imgH) - 0.008);
+      let tMaxY = Math.min(1, (maxY / imgH) + 0.008);
 
       if (!greenScreenState.detected) {
         greenScreenState.smoothMinX = tMinX;
@@ -249,7 +252,7 @@ window.ChromaEngine = (function () {
         greenScreenState.smoothMaxY = tMaxY;
         greenScreenState.detected = true;
       } else {
-        const factor = 0.14;
+        const factor = 0.22;
         greenScreenState.smoothMinX += (tMinX - greenScreenState.smoothMinX) * factor;
         greenScreenState.smoothMaxX += (tMaxX - greenScreenState.smoothMaxX) * factor;
         greenScreenState.smoothMinY += (tMinY - greenScreenState.smoothMinY) * factor;
