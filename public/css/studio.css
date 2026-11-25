@@ -897,6 +897,16 @@ html, body {
   border-color: var(--accent-emerald);
 }
 
+.hud-btn-rotate-bg.active {
+  border-color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.28);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+}
+
+.hud-btn-rotate-bg.active .hud-btn-text {
+  color: var(--accent-amber);
+}
+
 .hud-btn-icon {
   font-size: 18px;
   line-height: 1;

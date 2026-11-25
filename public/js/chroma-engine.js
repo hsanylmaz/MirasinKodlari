@@ -28,6 +28,7 @@ window.ChromaEngine = (function () {
     showRawGreen: false,
     showFrameOverlay: true,
     subjectFitMode: 'fit', // 'fit' (doğal 1x, yakınlaştırmasız) veya 'cover' (dolu)
+    bgRotation: 0,         // 0 (Normal Dik), 90 (Yan Sağ), -90 (Yan Sol)
     eventTitle: 'MİRASIN KODLARI',
     eventSubtitle: 'Dijital Yürüyüş STEM Hatırası',
     participantName: '',
@@ -274,6 +275,7 @@ window.ChromaEngine = (function () {
 
     const srcW = bgImg.naturalWidth || bgImg.width;
     const srcH = bgImg.naturalHeight || bgImg.height;
+    const rot = config.bgRotation || 0;
 
     // Eğer yeşil perde tespit edildiyse, arka plan afişini tam yeşil perdenin sınırlarına oturt:
     if (greenScreenState.detected) {
@@ -283,16 +285,35 @@ window.ChromaEngine = (function () {
       const gh = Math.round((greenScreenState.smoothMaxY - greenScreenState.smoothMinY) * targetH);
 
       if (gw > 40 && gh > 40) {
-        // Arka plan afişini yeşil perde alanının içine hiçbir yazı kesilmeyecek şekilde eksiksiz çiz:
+        // Arka plan afişini yeşil perde alanının içine (seçili döndürme açısıyla) hiçbir yazı kesilmeyecek şekilde çiz:
         ctx.save();
-        ctx.drawImage(bgImg, 0, 0, srcW, srcH, gx, gy, gw, gh);
+        if (rot === 90) {
+          ctx.translate(gx + gw * 0.5, gy + gh * 0.5);
+          ctx.rotate(Math.PI / 2);
+          ctx.drawImage(bgImg, 0, 0, srcW, srcH, -gh * 0.5, -gw * 0.5, gh, gw);
+        } else if (rot === -90) {
+          ctx.translate(gx + gw * 0.5, gy + gh * 0.5);
+          ctx.rotate(-Math.PI / 2);
+          ctx.drawImage(bgImg, 0, 0, srcW, srcH, -gh * 0.5, -gw * 0.5, gh, gw);
+        } else {
+          ctx.drawImage(bgImg, 0, 0, srcW, srcH, gx, gy, gw, gh);
+        }
         ctx.restore();
         return;
       }
     }
 
     // Yeşil perde henüz bulunamadıysa standart kaplama yap:
-    drawCoverImage(ctx, bgImg, targetW, targetH, false);
+    if (rot === 90 || rot === -90) {
+      ctx.save();
+      ctx.translate(targetW * 0.5, targetH * 0.5);
+      ctx.rotate(rot === 90 ? Math.PI / 2 : -Math.PI / 2);
+      ctx.translate(-targetH * 0.5, -targetW * 0.5);
+      drawCoverImage(ctx, bgImg, targetH, targetW, false);
+      ctx.restore();
+    } else {
+      drawCoverImage(ctx, bgImg, targetW, targetH, false);
+    }
   }
 
   function drawCoverImage(ctx, img, targetW, targetH, mirror) {
@@ -517,7 +538,24 @@ window.ChromaEngine = (function () {
       ctx.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, w, h);
     }
 
-    drawCompetitionFrame(ctx, w, h);
+    const rot = config.bgRotation || 0;
+    if (rot === 90) {
+      ctx.save();
+      ctx.translate(w * 0.5, h * 0.5);
+      ctx.rotate(Math.PI / 2);
+      ctx.translate(-h * 0.5, -w * 0.5);
+      drawCompetitionFrame(ctx, h, w);
+      ctx.restore();
+    } else if (rot === -90) {
+      ctx.save();
+      ctx.translate(w * 0.5, h * 0.5);
+      ctx.rotate(-Math.PI / 2);
+      ctx.translate(-h * 0.5, -w * 0.5);
+      drawCompetitionFrame(ctx, h, w);
+      ctx.restore();
+    } else {
+      drawCompetitionFrame(ctx, w, h);
+    }
   }
 
   const CAPTURE_PRESETS = {
@@ -578,6 +616,25 @@ window.ChromaEngine = (function () {
 
     if (hiSubjectCanvas) {
       ctx.drawImage(hiSubjectCanvas, 0, 0);
+    }
+
+    const rot = config.bgRotation || 0;
+    if (rot === 90 || rot === -90) {
+      const finalW = outH;
+      const finalH = outW;
+      const rotatedCanvas = document.createElement('canvas');
+      rotatedCanvas.width = finalW;
+      rotatedCanvas.height = finalH;
+      const rCtx = rotatedCanvas.getContext('2d');
+
+      rCtx.save();
+      rCtx.translate(finalW * 0.5, finalH * 0.5);
+      rCtx.rotate(rot === 90 ? -Math.PI / 2 : Math.PI / 2);
+      rCtx.drawImage(captureCanvas, -outW * 0.5, -outH * 0.5, outW, outH);
+      rCtx.restore();
+
+      drawCompetitionFrame(rCtx, finalW, finalH);
+      return rotatedCanvas.toDataURL('image/png');
     }
 
     drawCompetitionFrame(ctx, outW, outH);

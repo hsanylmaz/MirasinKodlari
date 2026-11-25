@@ -21,6 +21,7 @@
     isCountingDown: false,
     currentStage: 'setup',
     selectedRatio: null, // '16:9' | '4:3' | '1:1' | '9:16' (null ise yöne göre otomatik)
+    bgRotation: 0,       // 0 (Dik), 90 (Yan Sağ), -90 (Yan Sol)
   };
 
   const els = {
@@ -50,6 +51,8 @@
     hudShutterOverlay: document.getElementById('hudShutterOverlay'),
     btnHudCapturePhoto: document.getElementById('btnHudCapturePhoto'),
     btnHudFlipCamera: document.getElementById('btnHudFlipCamera'),
+    btnHudRotateBg: document.getElementById('btnHudRotateBg'),
+    hudRotateBgText: document.getElementById('hudRotateBgText'),
     btnHudQuickDownload: document.getElementById('btnHudQuickDownload'),
     btnToggleAspectFit: document.getElementById('btnToggleAspectFit'),
 
@@ -1071,6 +1074,32 @@
       els.btnHudFlipCamera.addEventListener('click', async () => {
         const nextFacing = state.currentFacingMode === 'user' ? 'environment' : 'user';
         await initCameraDevices(nextFacing);
+      });
+    }
+
+    if (els.btnHudRotateBg) {
+      els.btnHudRotateBg.addEventListener('click', () => {
+        // Sırayla döndür: 0 (Normal Dik) -> 90 (Yan Sağ) -> -90 (Yan Sol) -> 0
+        if (state.bgRotation === 0) {
+          state.bgRotation = 90;
+        } else if (state.bgRotation === 90) {
+          state.bgRotation = -90;
+        } else {
+          state.bgRotation = 0;
+        }
+
+        window.ChromaEngine.updateConfig({ bgRotation: state.bgRotation });
+
+        if (els.hudRotateBgText) {
+          if (state.bgRotation === 90) {
+            els.hudRotateBgText.textContent = 'Yan 1';
+          } else if (state.bgRotation === -90) {
+            els.hudRotateBgText.textContent = 'Yan 2';
+          } else {
+            els.hudRotateBgText.textContent = 'Döndür';
+          }
+        }
+        els.btnHudRotateBg.classList.toggle('active', state.bgRotation !== 0);
       });
     }
 
