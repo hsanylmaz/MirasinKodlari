@@ -139,7 +139,8 @@ window.ChromaEngine = (function () {
     greenScreenState.detected = false;
   }
 
-  function applyChromaKeyToImageData(imageData) {
+  function applyChromaKeyToImageData(imageData, options = {}) {
+    const skipStateUpdate = Boolean(options.skipStateUpdate);
     const data = imageData.data;
     const imgW = imageData.width;
     const imgH = imageData.height;
@@ -246,6 +247,16 @@ window.ChromaEngine = (function () {
       let tMinY = Math.max(0, (minY / imgH) - 0.008);
       let tMaxY = Math.min(1, (maxY / imgH) + 0.008);
 
+      if (skipStateUpdate) {
+        return {
+          detected: true,
+          minX: tMinX,
+          maxX: tMaxX,
+          minY: tMinY,
+          maxY: tMaxY,
+        };
+      }
+
       if (!greenScreenState.detected) {
         greenScreenState.smoothMinX = tMinX;
         greenScreenState.smoothMaxX = tMaxX;
@@ -260,9 +271,21 @@ window.ChromaEngine = (function () {
         greenScreenState.smoothMaxY += (tMaxY - greenScreenState.smoothMaxY) * factor;
       }
     }
+
+    if (greenScreenState.detected && !skipStateUpdate) {
+      return {
+        detected: true,
+        minX: greenScreenState.smoothMinX,
+        maxX: greenScreenState.smoothMaxX,
+        minY: greenScreenState.smoothMinY,
+        maxY: greenScreenState.smoothMaxY,
+      };
+    }
+
+    return { detected: false, minX: 0, maxX: 1, minY: 0, maxY: 1 };
   }
 
-  function drawBackgroundFittedToGreenScreen(ctx, bgImg, targetW, targetH) {
+  function drawBackgroundFittedToGreenScreen(ctx, bgImg, targetW, targetH, customBounds = null) {
     if (!bgImg || !bgImg.complete || !bgImg.naturalWidth) {
       ctx.fillStyle = '#111318';
       ctx.fillRect(0, 0, targetW, targetH);
@@ -277,12 +300,22 @@ window.ChromaEngine = (function () {
     const srcH = bgImg.naturalHeight || bgImg.height;
     const rot = config.bgRotation || 0;
 
+    const bounds = customBounds || (greenScreenState.detected
+      ? {
+          detected: true,
+          minX: greenScreenState.smoothMinX,
+          maxX: greenScreenState.smoothMaxX,
+          minY: greenScreenState.smoothMinY,
+          maxY: greenScreenState.smoothMaxY,
+        }
+      : null);
+
     // Eğer yeşil perde tespit edildiyse, arka plan afişini tam yeşil perdenin sınırlarına oturt:
-    if (greenScreenState.detected) {
-      const gx = Math.round(greenScreenState.smoothMinX * targetW);
-      const gy = Math.round(greenScreenState.smoothMinY * targetH);
-      const gw = Math.round((greenScreenState.smoothMaxX - greenScreenState.smoothMinX) * targetW);
-      const gh = Math.round((greenScreenState.smoothMaxY - greenScreenState.smoothMinY) * targetH);
+    if (bounds && bounds.detected) {
+      const gx = Math.round(bounds.minX * targetW);
+      const gy = Math.round(bounds.minY * targetH);
+      const gw = Math.round((bounds.maxX - bounds.minX) * targetW);
+      const gh = Math.round((bounds.maxY - bounds.minY) * targetH);
 
       if (gw > 40 && gh > 40) {
         // Arka plan afişini yeşil perde alanının içine (seçili döndürme açısıyla) hiçbir yazı kesilmeyecek şekilde çiz:
@@ -349,7 +382,9 @@ window.ChromaEngine = (function () {
   function drawSubjectImage(ctx, img, targetW, targetH, mirror) {
     const srcW = img.videoWidth || img.naturalWidth || img.width || targetW;
     const srcH = img.videoHeight || img.naturalHeight || img.height || targetH;
-    if (!srcW || !srcH) return;
+    if (!srcW || !srcH) {
+      return { x: 0, y: 0, w: targetW, h: targetH };
+    }
 
     ctx.save();
     if (mirror) {
@@ -359,6 +394,7 @@ window.ChromaEngine = (function () {
 
     const srcRatio = srcW / srcH;
     const targetRatio = targetW / targetH;
+    let drawnRect = { x: 0, y: 0, w: targetW, h: targetH };
 
     // Eğer kullanıcı 'cover' (Dolu) modunu seçtiyse görüntüyü kırparak tüm canvas'ı kaplar:
     if (config.subjectFitMode === 'cover') {
@@ -379,8 +415,6 @@ window.ChromaEngine = (function () {
     } else {
       // DOĞAL 1X / GENİŞ AÇI MODU (VARSAYILAN):
       // Ön ve arka kamerada yüzün aşırı yakınlaşmasını (crop zoom) tamamen engeller.
-      // Kameranın yüksekliğini ve genişliğini 100% koruyarak 16:9 canvas içerisine ortalar.
-      // Kişi doğal mesafesinde görünür, etrafındaki yeşil perde silinerek yarışma arka planı görünür.
       const scale = Math.min(targetW / srcW, targetH / srcH);
       const destW = srcW * scale;
       const destH = srcH * scale;
@@ -388,9 +422,11 @@ window.ChromaEngine = (function () {
       const destY = (targetH - destH) * 0.5;
 
       ctx.drawImage(img, 0, 0, srcW, srcH, destX, destY, destW, destH);
+      drawnRect = { x: destX, y: destY, w: destW, h: destH };
     }
 
     ctx.restore();
+    return drawnRect;
   }
 
   function drawCompetitionFrame(ctx, w, h) {
@@ -513,6 +549,8 @@ window.ChromaEngine = (function () {
       return;
     }
 
+    let frameRect = { x: 0, y: 0, w, h };
+
     if (sourceElem) {
       // Offscreen canvas boyutlarını targetCanvas'ın en-boy oranına (aspect ratio) tam uyumlu hesapla:
       const procW = Math.round(w > 960 ? 960 : w);
@@ -524,7 +562,16 @@ window.ChromaEngine = (function () {
       }
 
       offscreenCtx.clearRect(0, 0, procW, procH);
-      drawSubjectImage(offscreenCtx, sourceElem, procW, procH, shouldMirror);
+      const subjRect = drawSubjectImage(offscreenCtx, sourceElem, procW, procH, shouldMirror);
+      const scaleX = w / procW;
+      const scaleY = h / procH;
+      frameRect = {
+        x: Math.round(subjRect.x * scaleX),
+        y: Math.round(subjRect.y * scaleY),
+        w: Math.round(subjRect.w * scaleX),
+        h: Math.round(subjRect.h * scaleY),
+      };
+
       const frameData = offscreenCtx.getImageData(0, 0, procW, procH);
       applyChromaKeyToImageData(frameData);
       offscreenCtx.putImageData(frameData, 0, 0);
@@ -538,23 +585,27 @@ window.ChromaEngine = (function () {
       ctx.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, w, h);
     }
 
+    // 3. Yarışma çerçevesini siyah boşlukların dışına değil, doğrudan görüntünün tam sınırlarına oturt:
     const rot = config.bgRotation || 0;
     if (rot === 90) {
       ctx.save();
-      ctx.translate(w * 0.5, h * 0.5);
+      ctx.translate(frameRect.x + frameRect.w * 0.5, frameRect.y + frameRect.h * 0.5);
       ctx.rotate(Math.PI / 2);
-      ctx.translate(-h * 0.5, -w * 0.5);
-      drawCompetitionFrame(ctx, h, w);
+      ctx.translate(-frameRect.h * 0.5, -frameRect.w * 0.5);
+      drawCompetitionFrame(ctx, frameRect.h, frameRect.w);
       ctx.restore();
     } else if (rot === -90) {
       ctx.save();
-      ctx.translate(w * 0.5, h * 0.5);
+      ctx.translate(frameRect.x + frameRect.w * 0.5, frameRect.y + frameRect.h * 0.5);
       ctx.rotate(-Math.PI / 2);
-      ctx.translate(-h * 0.5, -w * 0.5);
-      drawCompetitionFrame(ctx, h, w);
+      ctx.translate(-frameRect.h * 0.5, -frameRect.w * 0.5);
+      drawCompetitionFrame(ctx, frameRect.h, frameRect.w);
       ctx.restore();
     } else {
-      drawCompetitionFrame(ctx, w, h);
+      ctx.save();
+      ctx.translate(frameRect.x, frameRect.y);
+      drawCompetitionFrame(ctx, frameRect.w, frameRect.h);
+      ctx.restore();
     }
   }
 
@@ -573,6 +624,13 @@ window.ChromaEngine = (function () {
     isPortrait = false,
     targetRatio = null,
   }) {
+    const { elem: sourceElem, shouldMirror } = resolveSourceElement({
+      videoElement,
+      staticSubjectImg,
+      isSimulation,
+      timestamp: performance.now(),
+    });
+
     let outW = 1920;
     let outH = 1080;
 
@@ -584,19 +642,35 @@ window.ChromaEngine = (function () {
       outH = isPortrait ? 1920 : 1080;
     }
 
+    // Doğal (fit) modda kameranın kendi gerçek en-boy oranını (4:3, 3:4, 16:9 vb.) kullanarak
+    // üstte, altta ve yanlarda siyah boşluk (letterbox/pillarbox) oluşmasını tamamen engelle:
+    const srcW = sourceElem
+      ? (sourceElem.videoWidth || sourceElem.naturalWidth || sourceElem.width || 0)
+      : 0;
+    const srcH = sourceElem
+      ? (sourceElem.videoHeight || sourceElem.naturalHeight || sourceElem.height || 0)
+      : 0;
+
+    if (config.subjectFitMode !== 'cover' && srcW > 0 && srcH > 0) {
+      const maxDim = 1920;
+      if (srcW >= srcH) {
+        outW = maxDim;
+        outH = Math.round((srcH / srcW) * maxDim);
+      } else {
+        outH = maxDim;
+        outW = Math.round((srcW / srcH) * maxDim);
+      }
+      outW = Math.max(2, outW - (outW % 2));
+      outH = Math.max(2, outH - (outH % 2));
+    }
+
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = outW;
     captureCanvas.height = outH;
     const ctx = captureCanvas.getContext('2d');
 
-    const { elem: sourceElem, shouldMirror } = resolveSourceElement({
-      videoElement,
-      staticSubjectImg,
-      isSimulation,
-      timestamp: performance.now(),
-    });
-
     let hiSubjectCanvas = null;
+    let captureBounds = null;
     if (sourceElem) {
       hiSubjectCanvas = document.createElement('canvas');
       hiSubjectCanvas.width = outW;
@@ -606,13 +680,13 @@ window.ChromaEngine = (function () {
       drawSubjectImage(hiCtx, sourceElem, outW, outH, shouldMirror);
       if (config.enabled) {
         const frameData = hiCtx.getImageData(0, 0, outW, outH);
-        applyChromaKeyToImageData(frameData);
+        captureBounds = applyChromaKeyToImageData(frameData, { skipStateUpdate: true });
         hiCtx.putImageData(frameData, 0, 0);
       }
     }
 
     // Arka plan afişini yüksek çözünürlükte tam yeşil perde sınırlarına oturt:
-    drawBackgroundFittedToGreenScreen(ctx, backgroundImg, outW, outH);
+    drawBackgroundFittedToGreenScreen(ctx, backgroundImg, outW, outH, captureBounds);
 
     if (hiSubjectCanvas) {
       ctx.drawImage(hiSubjectCanvas, 0, 0);
