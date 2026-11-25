@@ -1760,20 +1760,20 @@ html.is-portrait .btn-back-to-setup {
     z-index: 35 !important;
   }
 
-  /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ ORTADA BAŞPARMAK HİZASINDA */
+  /* YATAYDA DEKLANŞÖR & ÇEVİR BUTONLARI: SAĞ KENARDA BAŞPARMAK HİZASINDA */
   .hud-shutter-overlay {
-    top: auto !important;
-    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
-    right: auto !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    flex-direction: row !important;
+    top: 50% !important;
+    bottom: auto !important;
+    right: max(16px, env(safe-area-inset-right, 16px)) !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 14px !important;
-    padding: 8px 18px !important;
-    border-radius: 50px !important;
-    background: rgba(9, 10, 12, 0.72) !important;
+    gap: 12px !important;
+    padding: 12px 10px !important;
+    border-radius: 40px !important;
+    background: rgba(9, 10, 12, 0.76) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
     border: 1px solid rgba(255, 255, 255, 0.28) !important;
@@ -1786,13 +1786,24 @@ html.is-portrait .btn-back-to-setup {
   }
 
   .hud-shutter-button {
-    width: 64px !important;
-    height: 64px !important;
+    width: 68px !important;
+    height: 68px !important;
   }
 
   .hud-btn {
     width: 44px !important;
     height: 44px !important;
+  }
+
+  .hud-ratio-menu {
+    position: absolute !important;
+    right: calc(100% + 10px) !important;
+    left: auto !important;
+    top: 0 !important;
+    bottom: auto !important;
+    transform: none !important;
+    flex-direction: column !important;
+    gap: 6px !important;
   }
 
   .mobile-camera-bar {
@@ -1906,18 +1917,18 @@ html.is-portrait .btn-back-to-setup {
   }
 
   html.is-landscape .hud-shutter-overlay {
-    top: auto !important;
-    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
-    right: auto !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    flex-direction: row !important;
+    top: 50% !important;
+    bottom: auto !important;
+    right: max(16px, env(safe-area-inset-right, 16px)) !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 14px !important;
-    padding: 8px 18px !important;
-    border-radius: 50px !important;
-    background: rgba(9, 10, 12, 0.72) !important;
+    gap: 12px !important;
+    padding: 12px 10px !important;
+    border-radius: 40px !important;
+    background: rgba(9, 10, 12, 0.76) !important;
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
     border: 1px solid rgba(255, 255, 255, 0.28) !important;
@@ -1930,13 +1941,24 @@ html.is-portrait .btn-back-to-setup {
   }
 
   html.is-landscape .hud-shutter-button {
-    width: 64px !important;
-    height: 64px !important;
+    width: 68px !important;
+    height: 68px !important;
   }
 
   html.is-landscape .hud-btn {
     width: 44px !important;
     height: 44px !important;
+  }
+
+  html.is-landscape .hud-ratio-menu {
+    position: absolute !important;
+    right: calc(100% + 10px) !important;
+    left: auto !important;
+    top: 0 !important;
+    bottom: auto !important;
+    transform: none !important;
+    flex-direction: column !important;
+    gap: 6px !important;
   }
 
   html.is-landscape .mobile-camera-bar {
