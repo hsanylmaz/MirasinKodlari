@@ -20,8 +20,8 @@
     isEyedropperMode: false,
     isCountingDown: false,
     currentStage: 'setup',
-    selectedRatio: null, // '16:9' | '4:3' | '1:1' | '9:16' (null ise yöne göre otomatik)
-    bgRotation: 0,       // 0 (Dik), 90 (Yan Sağ), -90 (Yan Sol)
+    selectedRatio: '16:9', // Varsayılan her zaman 16:9 başlar
+    bgRotation: 0,         // 0 (Dik), 90 (Yan Sağ), -90 (Yan Sol)
   };
 
   const els = {
@@ -140,10 +140,7 @@
     if (state.selectedRatio && RATIO_CONFIGS[state.selectedRatio]) {
       return state.selectedRatio;
     }
-    const isLandscape =
-      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
-      window.innerWidth > window.innerHeight;
-    return isLandscape ? '16:9' : '9:16';
+    return '16:9';
   }
 
   async function applyAspectRatio(ratioKey, userInitiated = false) {
@@ -164,21 +161,36 @@
       });
     }
 
+    const isRotatedSideways = state.bgRotation === 90 || state.bgRotation === -90;
+    const targetCanvasW = isRotatedSideways ? cfg.h : cfg.w;
+    const targetCanvasH = isRotatedSideways ? cfg.w : cfg.h;
+    const isLandscapeViewport =
+      (window.matchMedia && window.matchMedia('(orientation: landscape)').matches) ||
+      window.innerWidth > window.innerHeight;
+
     if (els.stageCanvas) {
-      if (els.stageCanvas.width !== cfg.w || els.stageCanvas.height !== cfg.h) {
-        els.stageCanvas.width = cfg.w;
-        els.stageCanvas.height = cfg.h;
+      if (els.stageCanvas.width !== targetCanvasW || els.stageCanvas.height !== targetCanvasH) {
+        els.stageCanvas.width = targetCanvasW;
+        els.stageCanvas.height = targetCanvasH;
       }
-      // 16:9 dışındaki kadraj oranlarında (4:3, 1:1, 9:16) yatay ekranda kırpılmayı önlemek için contain-mode uygula
-      if (ratioKey !== '16:9') {
+      // Yatay ekranda 16:9 dışındaki oranlar kırpılmasın:
+      if (isLandscapeViewport && targetCanvasW / targetCanvasH < 1.7) {
         els.stageCanvas.classList.add('contain-mode');
       } else {
         els.stageCanvas.classList.remove('contain-mode');
       }
+      // Dikey ekranda yatay kadraj (ör. 16:9 ve döndürme 0°) seçiliyse önizleme yanlardan kesilmesin:
+      if (!isLandscapeViewport && targetCanvasW > targetCanvasH) {
+        els.stageCanvas.classList.add('contain-portrait');
+      } else {
+        els.stageCanvas.classList.remove('contain-portrait');
+      }
     }
 
     if (els.viewfinderShell) {
-      els.viewfinderShell.style.aspectRatio = cfg.cssRatio;
+      els.viewfinderShell.style.aspectRatio = isRotatedSideways
+        ? `${cfg.h} / ${cfg.w}`
+        : cfg.cssRatio;
     }
 
     // Kullanıcı kadraj oranını değiştirdiğinde ve canlı kamera açıksa kamerayı yeni orana göre yeniden başlat
@@ -1089,6 +1101,10 @@
         }
 
         window.ChromaEngine.updateConfig({ bgRotation: state.bgRotation });
+        if (window.ChromaEngine.resetGreenScreenBounds) {
+          window.ChromaEngine.resetGreenScreenBounds();
+        }
+        applyAspectRatio(getActiveRatio(), false);
 
         if (els.hudRotateBgText) {
           if (state.bgRotation === 90) {

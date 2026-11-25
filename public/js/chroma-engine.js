@@ -27,8 +27,8 @@ window.ChromaEngine = (function () {
     mirror: true,
     showRawGreen: false,
     showFrameOverlay: true,
-    subjectFitMode: 'fit', // 'fit' (doğal 1x, yakınlaştırmasız) veya 'cover' (dolu)
-    bgRotation: 0,         // 0 (Normal Dik), 90 (Yan Sağ), -90 (Yan Sol)
+    subjectFitMode: 'cover', // Varsayılan 'cover': çerçeve ile fotoğraf arasında siyah boşluk kalmaz
+    bgRotation: 0,           // 0 (Normal Dik), 90 (Yan Sağ), -90 (Yan Sol)
     eventTitle: 'MİRASIN KODLARI',
     eventSubtitle: 'Dijital Yürüyüş STEM Hatırası',
     participantName: '',
@@ -631,6 +631,7 @@ window.ChromaEngine = (function () {
       timestamp: performance.now(),
     });
 
+    const rot = config.bgRotation || 0;
     let outW = 1920;
     let outH = 1080;
 
@@ -642,8 +643,15 @@ window.ChromaEngine = (function () {
       outH = isPortrait ? 1920 : 1080;
     }
 
-    // Doğal (fit) modda kameranın kendi gerçek en-boy oranını (4:3, 3:4, 16:9 vb.) kullanarak
-    // üstte, altta ve yanlarda siyah boşluk (letterbox/pillarbox) oluşmasını tamamen engelle:
+    // Eğer arka plan 90° döndürülmüşse (ekran kilidi kapalıyken yan çekim),
+    // döndürme sonrası hedef oranın (ör. 1920x1080 16:9) tam çıkması için ön-canvas boyutlarını takas et:
+    if (rot === 90 || rot === -90) {
+      const tmp = outW;
+      outW = outH;
+      outH = tmp;
+    }
+
+    // Doğal (fit) mod seçiliyse kameranın kendi gerçek en-boy oranını kullanarak siyah boşluk oluşmasını engelle:
     const srcW = sourceElem
       ? (sourceElem.videoWidth || sourceElem.naturalWidth || sourceElem.width || 0)
       : 0;
@@ -692,7 +700,6 @@ window.ChromaEngine = (function () {
       ctx.drawImage(hiSubjectCanvas, 0, 0);
     }
 
-    const rot = config.bgRotation || 0;
     if (rot === 90 || rot === -90) {
       const finalW = outH;
       const finalH = outW;

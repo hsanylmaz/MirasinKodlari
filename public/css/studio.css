@@ -1509,6 +1509,11 @@ html, body {
     object-fit: cover !important;
   }
 
+  #stageCanvas.contain-portrait {
+    object-fit: contain !important;
+    aspect-ratio: auto !important;
+  }
+
   /* DİKEYDE DEKLANŞÖR & ÇEVİR BUTONLARI: ALT ORTADA */
   .hud-shutter-overlay {
     top: auto !important;
@@ -1616,6 +1621,11 @@ html.is-portrait #stageCanvas {
 
 html.is-portrait #stageCanvas.cover-mode {
   object-fit: cover !important;
+}
+
+html.is-portrait #stageCanvas.contain-portrait {
+  object-fit: contain !important;
+  aspect-ratio: auto !important;
 }
 
 html.is-portrait .hud-shutter-overlay {
